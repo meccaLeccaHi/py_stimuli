@@ -8,8 +8,9 @@ These scripts make use of the following toolboxes:
 ## - Eyetracking software:
 **PyGaze** http://www.pygaze.org/
 #### Hardware-specific tools:
-**PyLink** http://www.psychopy.org/api/hardware/pylink.html  
-##### Each folder contains a single experiment:
+**PyLink** http://www.psychopy.org/api/hardware/pylink.html
+##### Each folder contains a single experiment:   
+
 #### -constants.py
 - Defines constant variables for each experiment (e.g. display size).
 
