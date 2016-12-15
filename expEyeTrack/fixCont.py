@@ -9,8 +9,16 @@ iohub_tracker_class_path and eyetracker_config dict script variables.
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
-# Number if 'trials' to run in demo
+import time, glob
+
+# Find movies matching wildcard search
+videopath = '/home/adam/Desktop/virtBox_share/JonesStimset/identity1/'
+videolist = glob.glob(videopath + '*100_audVid.avi')
+
+# Number if 'trials' to run
 TRIAL_COUNT = 2
+#TRIAL_COUNT = videolist.len
+
 # Maximum trial time / time timeout
 T_MAX = 10.0
 
@@ -43,6 +51,12 @@ gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
                               size=(66, 66), color='green', units='pix')
+                              
+#fixation = visual.GratingStim(win, tex=None, mask='circle', sf=0, size=0.03,
+#                              name='fixation', autoLog=False)
+#                              
+#photodiode = visual.GratingStim(win, tex=None, mask='none', sf=0, size=0.2,
+#                                name='photodiode', autoLog=False, pos=(1,-1))
 
 text_stim_str = 'Eye Position: %.2f, %.2f. In Region: %s\n'
 text_stim_str += 'Press space key to start next trial.'
@@ -58,11 +72,19 @@ text_stim = visual.TextStim(win, text=text_stim_str,
 # Run Trials.....
 t = 0
 while t < TRIAL_COUNT:
+    
+    # Load movie from list
+    mov = visual.MovieStim3(win, videolist[t], size=(366, 332),fps=30,
+                            flipVert=False, flipHoriz=False, loop=False) 
+                            
     io.clearEvents()
     tracker.setRecordingState(True)
     run_trial = True
     tstart_time = core.getTime()
     while run_trial is True:
+        
+        #while mov.status != visual.FINISHED:
+    
         # Get the latest gaze position in dispolay coord space..
         gpos = tracker.getLastGazePosition()
 
@@ -74,8 +96,12 @@ while t < TRIAL_COUNT:
             # and text stim.
             if gaze_in_region:
                 gaze_in_region = 'Yes'
+#                mov.draw()
+#                fixation.draw()
+#                photodiode.draw()
             else:
                 gaze_in_region = 'No'
+                
             text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region)
 
             gaze_dot.setPos(gpos)
