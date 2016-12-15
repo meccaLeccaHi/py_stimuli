@@ -16,3 +16,7 @@ These scripts make use of the following toolboxes:
 
 #### - experiment.py
 - Script for executing actual experiment.
+
+##### Relies heavily on the examples provided in the following book:
+_Python for Experimental Psychologists_ by Edwin S. Dalmaijer
+
