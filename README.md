@@ -11,8 +11,8 @@ These scripts make use of the following toolboxes:
 **PyLink** http://www.psychopy.org/api/hardware/pylink.html
 ##### Each folder contains a single experiment (composed of two files):   
 
-#### -constants.py
+#### - constants.py
 - Defines constant variables for each experiment (e.g. display size).
 
-#### -experiment.py
+#### - experiment.py
 - Script for executing actual experiment.
