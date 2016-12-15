@@ -9,10 +9,8 @@ These scripts make use of the following toolboxes:
 **PyGaze** http://www.pygaze.org/
 #### Hardware-specific tools:
 **PyLink** http://www.psychopy.org/api/hardware/pylink.html
-##### Each folder contains a single experiment:   
-
+##### Each folder contains a single experiment (composed of two files):   
 #### -constants.py
 - Defines constant variables for each experiment (e.g. display size).
-
 #### -experiment.py
 - Script for executing actual experiment.
