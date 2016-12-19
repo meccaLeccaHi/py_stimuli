@@ -20,7 +20,7 @@ videopath = '/home/adam/Desktop/virtBox_share/JonesStimset/identity1/'
 videolist = glob.glob(videopath + '*_audVid.avi')
 
 # Number of trials of each stimulus to run
-BLOCK_REPS = 1
+BLOCK_REPS = 2
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
 iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
@@ -57,11 +57,13 @@ gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
 fixation = visual.GratingStim(win, tex=None, mask='circle', sf=0, size=0.03,
                               name='fixation', autoLog=False)
                               
-photodiode = visual.GratingStim(win, tex=None, mask='none', sf=0, size=0.2,
+photodiode = visual.GratingStim(win, tex=None, mask='none', sf=0, size=1,
                                 name='photodiode', autoLog=False, pos=(1,-1))
 
 text_stim_str = 'Eye Position: %.2f, %.2f. In Region: %s\n'
-text_stim_str += 'Press space key to start next trial.'
+text_stim_str += 'Trial #: %d\n'
+text_stim_str += 'Press space key to skip trial.'
+
 missing_gpos_str = 'Eye Position: MISSING. In Region: No\n'
 missing_gpos_str += 'Press space key to start next trial.'
 text_stim = visual.TextStim(win, text=text_stim_str,
@@ -72,7 +74,8 @@ text_stim = visual.TextStim(win, text=text_stim_str,
                                  wrapWidth=win.size[0] * .9)
 # Run blocks.....
 for block in range(BLOCK_REPS):
-                    
+             
+    t = 1         
     # Run Trials.....
     for vidPath in videolist:
     
@@ -83,7 +86,7 @@ for block in range(BLOCK_REPS):
         io.clearEvents()
         tracker.setRecordingState(True)
         run_trial = True
-        tstart_time = core.getTime()
+#        tstart_time = core.getTime()
         
         while run_trial is True:
             
@@ -107,7 +110,8 @@ for block in range(BLOCK_REPS):
                         gaze_in_region = 'No'
                         mov.status = visual.FINISHED
                         
-                    text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region)
+                    TRIAL_N = t + block * len(videolist)  
+                    text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, TRIAL_N)
         
                     gaze_dot.setPos(gpos)
                 else:
@@ -132,6 +136,7 @@ for block in range(BLOCK_REPS):
         # Current Trial is Done
         # Stop eye data recording
         tracker.setRecordingState(False)
+        t += 1
 
 # All Trials are done
 # End experiment
