@@ -31,7 +31,7 @@ videopath = glob.glob('/home/adam/Desktop/virtBox_share/JonesStimset/identity1/*
 
 for vidPath in videopath:
     
-    mov = visual.MovieStim3(win, vidPath, size=(366, 332),fps=30,
+    mov = visual.MovieStim3(win, videopath[0], size=(366, 332),fps=30,
                             flipVert=False, flipHoriz=False, loop=False) # 320, 240
     print('orig movie size=%s' % mov.size)
     print('duration=%.2fs' % mov.duration)

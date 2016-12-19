@@ -16,11 +16,11 @@ videopath = '/home/adam/Desktop/virtBox_share/JonesStimset/identity1/'
 videolist = glob.glob(videopath + '*100_audVid.avi')
 
 # Number if 'trials' to run
-TRIAL_COUNT = 2
-#TRIAL_COUNT = videolist.len
+BLOCK_REPS = 1
+TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
-# Maximum trial time / time timeout
-T_MAX = 10.0
+## Maximum trial time / time timeout
+#T_MAX = 10.0
 
 iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
 eyetracker_config = dict()
@@ -52,11 +52,11 @@ gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
                               size=(66, 66), color='green', units='pix')
                               
-#fixation = visual.GratingStim(win, tex=None, mask='circle', sf=0, size=0.03,
-#                              name='fixation', autoLog=False)
-#                              
-#photodiode = visual.GratingStim(win, tex=None, mask='none', sf=0, size=0.2,
-#                                name='photodiode', autoLog=False, pos=(1,-1))
+fixation = visual.GratingStim(win, tex=None, mask='circle', sf=0, size=0.03,
+                              name='fixation', autoLog=False)
+                              
+photodiode = visual.GratingStim(win, tex=None, mask='none', sf=0, size=0.2,
+                                name='photodiode', autoLog=False, pos=(1,-1))
 
 text_stim_str = 'Eye Position: %.2f, %.2f. In Region: %s\n'
 text_stim_str += 'Press space key to start next trial.'
@@ -70,64 +70,63 @@ text_stim = visual.TextStim(win, text=text_stim_str,
                                  wrapWidth=win.size[0] * .9)
 
 # Run Trials.....
-t = 0
-while t < TRIAL_COUNT:
-    
+for vidPath in videolist:
+
     # Load movie from list
-    mov = visual.MovieStim3(win, videolist[t], size=(366, 332),fps=30,
+    mov = visual.MovieStim3(win, vidPath, size=(366, 332),fps=30,
                             flipVert=False, flipHoriz=False, loop=False) 
                             
     io.clearEvents()
     tracker.setRecordingState(True)
     run_trial = True
     tstart_time = core.getTime()
+    
     while run_trial is True:
         
-        #while mov.status != visual.FINISHED:
+        if mov.status != visual.FINISHED:
+            
+            # Get the latest gaze position in dispolay coord space..
+            gpos = tracker.getLastGazePosition()
     
-        # Get the latest gaze position in dispolay coord space..
-        gpos = tracker.getLastGazePosition()
-
-        # Update stim based on gaze position
-        valid_gaze_pos = isinstance(gpos, (tuple, list))
-        gaze_in_region = valid_gaze_pos and gaze_ok_region.contains(gpos)
-        if valid_gaze_pos:
-            # If we have a gaze position from the tracker, update gc stim
-            # and text stim.
-            if gaze_in_region:
-                gaze_in_region = 'Yes'
-#                mov.draw()
-#                fixation.draw()
-#                photodiode.draw()
+            # Update stim based on gaze position
+            valid_gaze_pos = isinstance(gpos, (tuple, list))
+            gaze_in_region = valid_gaze_pos and gaze_ok_region.contains(gpos)
+            if valid_gaze_pos:
+                # If we have a gaze position from the tracker, update gc stim
+                # and text stim.
+                if gaze_in_region:
+                    gaze_in_region = 'Yes'
+                    mov.draw()
+                    fixation.draw()
+                    photodiode.draw()
+                else:
+                    gaze_in_region = 'No'
+                    
+                text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region)
+    
+                gaze_dot.setPos(gpos)
             else:
-                gaze_in_region = 'No'
-                
-            text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region)
-
-            gaze_dot.setPos(gpos)
-        else:
-            # Otherwise just update text stim
-            text_stim.text = missing_gpos_str
-
-        # Redraw stim
-        gaze_ok_region.draw()
-        text_stim.draw()
-        if valid_gaze_pos:
-            gaze_dot.draw()
-
-        # Display updated stim on screen.
-        flip_time = win.flip()
-
-        # Check any new keyboard char events for a space key.
-        # If one is found, set the trial end variable.
-        #
-        if ' ' in keyboard.getPresses() or core.getTime()-tstart_time > T_MAX:
-            run_trial = False
+                # Otherwise just update text stim
+                text_stim.text = missing_gpos_str
+    
+            # Redraw stim
+            gaze_ok_region.draw()
+            text_stim.draw()
+            if valid_gaze_pos:
+                gaze_dot.draw()
+    
+            # Display updated stim on screen.
+            flip_time = win.flip()
+    
+            # Check any new keyboard char events for a space key.
+            # If one is found, set the trial end variable.
+            #
+            if ' ' in keyboard.getPresses():
+                run_trial = False
 
     # Current Trial is Done
     # Stop eye data recording
     tracker.setRecordingState(False)
-    t += 1
 
 # All Trials are done
 # End experiment
