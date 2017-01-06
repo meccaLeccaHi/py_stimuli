@@ -23,11 +23,16 @@ videolist = glob.glob(videopath + '*_audVid.avi')
 BLOCK_REPS = 2
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
+SIMULATE = 1; # 1: yes, 2: no
+
+# Set-up tracker configuration dict
 iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
 eyetracker_config = dict()
 eyetracker_config['name'] = 'tracker'
-#eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
-eyetracker_config['simulation_mode'] = True
+if SIMULATE:
+    eyetracker_config['simulation_mode'] = True
+else:
+    eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
 eyetracker_config['runtime_settings'] = dict(sampling_rate=1000,
                                              track_eyes='RIGHT')
 
@@ -65,7 +70,7 @@ text_stim_str += 'Trial #: %d\n'
 text_stim_str += 'Press space key to skip trial.'
 
 missing_gpos_str = 'Eye Position: MISSING. In Region: No\n'
-missing_gpos_str += 'Press space key to start next trial.'
+missing_gpos_str += 'Press space key to skip trial.'
 text_stim = visual.TextStim(win, text=text_stim_str,
                             pos=[0, int((-win.size[1]/2)*0.8)], height=24,
                                  color='white',
