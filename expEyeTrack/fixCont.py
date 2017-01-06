@@ -13,15 +13,21 @@ future versions should read compressed movies-
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
-import time, glob
+import glob, time
+import numpy as np
 
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/virtBox_share/JonesStimset/identity1/'
 videolist = glob.glob(videopath + '*_audVid.avi')
 
 # Number of trials of each stimulus to run
-BLOCK_REPS = 2
+BLOCK_REPS = 1
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
+
+# Set-up screen
+SCREEN_SIZE = np.array([1280, 1024])
+PHOTO_SIZE = 100
+PHOTO_POS = (SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1]
 
 SIMULATE = 1; # 1: yes, 2: no
 
@@ -37,33 +43,29 @@ eyetracker_config['runtime_settings'] = dict(sampling_rate=1000,
                                              track_eyes='RIGHT')
 
 # Since no experiment or session code is given, no iohub hdf5 file
-# will be saved, but device events are still available at runtime.
+# will be saved, but device events are still available at runtime
 io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
 
-# Get some iohub devices for future access.
+# Get some iohub devices for future access
 keyboard = io.devices.keyboard
 display = io.devices.display
 tracker = io.devices.tracker
 
-# run eyetracker calibration
+# Run eyetracker calibration
 r = tracker.runSetupProcedure()
-win = visual.Window(display.getPixelResolution(),
+win = visual.Window(SCREEN_SIZE.tolist(),
                     units='pix',
                     fullscr=True,
                     allowGUI=False,
                     color='black'
                     )
 
+# Define window objects
 gaze_ok_region = visual.Circle(win, radius=200, units='pix')
-
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
                               size=(66, 66), color='green', units='pix')
-                              
-fixation = visual.GratingStim(win, tex=None, mask='circle', sf=0, size=0.03,
-                              name='fixation', autoLog=False)
-                              
-photodiode = visual.GratingStim(win, tex=None, mask='none', sf=0, size=1,
-                                name='photodiode', autoLog=False, pos=(1,-1))
+photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist(),
+                                size=100)
 
 text_stim_str = 'Eye Position: %.2f, %.2f. In Region: %s\n'
 text_stim_str += 'Trial #: %d\n'
@@ -77,6 +79,9 @@ text_stim = visual.TextStim(win, text=text_stim_str,
                                  alignHoriz='center',
                                  alignVert='center', 
                                  wrapWidth=win.size[0] * .9)
+                                 
+globalClock = core.Clock()
+
 # Run blocks.....
 for block in range(BLOCK_REPS):
              
@@ -97,7 +102,7 @@ for block in range(BLOCK_REPS):
             
             if mov.status != visual.FINISHED:
                 
-                # Get the latest gaze position in dispolay coord space..
+                # Get the latest gaze position in display coord space
                 gpos = tracker.getLastGazePosition()
         
                 # Update stim based on gaze position
@@ -105,11 +110,10 @@ for block in range(BLOCK_REPS):
                 gaze_in_region = valid_gaze_pos and gaze_ok_region.contains(gpos)
                 if valid_gaze_pos:
                     # If we have a gaze position from the tracker, update gc stim
-                    # and text stim.
+                    # and text stim
                     if gaze_in_region:
                         gaze_in_region = 'Yes'
                         mov.draw()
-                        fixation.draw()
                         photodiode.draw()
                     else:
                         gaze_in_region = 'No'
@@ -129,16 +133,25 @@ for block in range(BLOCK_REPS):
                 if valid_gaze_pos:
                     gaze_dot.draw()
         
-                # Display updated stim on screen.
+                # Display updated stim on screen
                 flip_time = win.flip()
         
-                # Check any new keyboard char events for a space key.
-                # If one is found, set the trial end variable.
+                # Check any new keyboard char events for a space key
+                # If one is found, set the trial end variable
                 #
                 if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED:
                     run_trial = False
     
         # Current Trial is Done
+    
+        # Redraw stim
+        gaze_ok_region.draw()
+        text_stim.draw()
+        # Display updated stim on screen
+        flip_time = win.flip()
+        
+        time.sleep(1)
+                
         # Stop eye data recording
         tracker.setRecordingState(False)
         t += 1
