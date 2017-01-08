@@ -80,7 +80,7 @@ text_stim = visual.TextStim(win, text=text_stim_str,
                                  alignVert='center', 
                                  wrapWidth=win.size[0] * .9)
                                  
-globalClock = core.Clock()
+globalClock = core.Clock()  # to track the time since experiment started
 
 # Run blocks.....
 for block in range(BLOCK_REPS):
@@ -90,57 +90,70 @@ for block in range(BLOCK_REPS):
     for vidPath in videolist:
     
         # Create movie stim by loading movie from list
-        mov = visual.MovieStim3(win, vidPath, size=(366, 332),fps=30,
+        mov = visual.MovieStim3(win, vidPath, size=(366, 332), fps = 30,
                                 flipVert=False, flipHoriz=False, loop=False) 
-                                
+        print('movie size=%s' % mov.size)
+        print('duration=%.2fs' % mov.duration)
+    
         io.clearEvents()
         tracker.setRecordingState(True)
         run_trial = True
 #        tstart_time = core.getTime()
         
-        while run_trial is True:
-            
-            if mov.status != visual.FINISHED:
+        # Start the movie stim by preparing it to play
+        shouldflip = mov.play()
+        
+        while (run_trial is True)&(mov.status != visual.FINISHED):
                 
-                # Get the latest gaze position in display coord space
-                gpos = tracker.getLastGazePosition()
+            # Get the latest gaze position in display coord space
+            gpos = tracker.getLastGazePosition()
         
-                # Update stim based on gaze position
-                valid_gaze_pos = isinstance(gpos, (tuple, list))
-                gaze_in_region = valid_gaze_pos and gaze_ok_region.contains(gpos)
-                if valid_gaze_pos:
-                    # If we have a gaze position from the tracker, update gc stim
-                    # and text stim
-                    if gaze_in_region:
-                        gaze_in_region = 'Yes'
-                        mov.draw()
-                        photodiode.draw()
+            # Update stim based on gaze position
+            valid_gaze_pos = isinstance(gpos, (tuple, list))
+            gaze_in_region = valid_gaze_pos and gaze_ok_region.contains(gpos)
+            if valid_gaze_pos:
+                # If we have a gaze position from the tracker, update gc stim
+                # and text stim
+                if gaze_in_region:
+                    gaze_in_region = 'Yes'
+                    
+                    # Only flip when a new frame should be displayed
+                    if shouldflip:
+                        # Movie has already been drawn , so just draw text stim and flip
+                        text.draw()
+                        win.flip()
                     else:
-                        gaze_in_region = 'No'
-                        mov.status = visual.FINISHED
-                        
-                    TRIAL_N = t + block * len(videolist)  
-                    text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, TRIAL_N)
-        
-                    gaze_dot.setPos(gpos)
+                        # Give the OS a break if a flip is not needed
+                        time.sleep(0.001)
+                    # Drawn movie stim again
+                    shouldflip = mov.draw()
+                    
+                    photodiode.draw()
                 else:
-                    # Otherwise just update text stim
-                    text_stim.text = missing_gpos_str
+                    gaze_in_region = 'No'
+                    mov.status = visual.FINISHED
+                        
+                TRIAL_N = t + block * len(videolist)  
+                text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, TRIAL_N)
         
-                # Redraw stim
-                gaze_ok_region.draw()
-                text_stim.draw()
-                if valid_gaze_pos:
-                    gaze_dot.draw()
+                gaze_dot.setPos(gpos)
+            else:
+                # Otherwise just update text stim
+                text_stim.text = missing_gpos_str
         
-                # Display updated stim on screen
-                flip_time = win.flip()
+            # Redraw stim
+            gaze_ok_region.draw()
+            text_stim.draw()
+            if valid_gaze_pos:
+                gaze_dot.draw()
         
-                # Check any new keyboard char events for a space key
-                # If one is found, set the trial end variable
-                #
-                if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED:
-                    run_trial = False
+            # Display updated stim on screen
+            flip_time = win.flip()
+        
+            # Check any new keyboard char events for a space key
+            # If one is found, set the trial end variable
+            if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED:
+                run_trial = False
     
         # Current Trial is Done
     
@@ -148,9 +161,9 @@ for block in range(BLOCK_REPS):
         gaze_ok_region.draw()
         text_stim.draw()
         # Display updated stim on screen
-        flip_time = win.flip()
+        flip_time = win.flip(clearBuffer=True)
         
-        time.sleep(1)
+        time.sleep(.5)
                 
         # Stop eye data recording
         tracker.setRecordingState(False)
