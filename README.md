@@ -7,8 +7,10 @@ These scripts make use of the following toolboxes:
 **Psychopy** http://www.psychopy.org/
 ## - Eyetracking software:
 **PyGaze** http://www.pygaze.org/
-#### Hardware-specific tools:
+#### Proprietary tools:
 **PyLink** http://www.psychopy.org/api/hardware/pylink.html
+## - Subject feedback (via gamepad)
+**PyGame** http://www.pygame.org/
 ##### Each folder contains a single experiment (composed of two files):   
 
 #### - constants.py
