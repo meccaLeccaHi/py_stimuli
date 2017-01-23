@@ -13,7 +13,7 @@ future versions should read compressed movies-
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
-import glob, time
+import glob, time, pygame
 import numpy as np
 
 # Find movies matching wildcard search
@@ -33,6 +33,9 @@ PHOTO_POS = (SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1]
 EYE_TRACKER = 0; # 1: yes, 0: no
 # toggle to simulate tracker activity with mouse
 SIMULATE = 1; # 1: yes, 0: no
+
+# toggle for presence of joystick (N64 only, currently)
+JOYSTICK = 1; # 1: yes, 0: no
     
 if EYE_TRACKER:
     # Set-up tracker configuration dict
@@ -53,7 +56,13 @@ if EYE_TRACKER:
     tracker = io.devices.tracker
 else:
     io = launchHubServer()
-    
+  
+if JOYSTICK:
+    # Initialize the joystick
+    pygame.init()
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init() 
+
 # Get iohub devices for future access
 keyboard = io.devices.keyboard
 display = io.devices.display
@@ -125,6 +134,12 @@ for block in range(BLOCK_REPS):
                 valid_gaze_pos = True
                 gaze_in_region = True
                 
+            if JOYSTICK:
+                pygame.event.get() # Look for joystick events
+                button = joystick.get_button( 7 ) # 'Z'-trigger button
+            else:
+                button = 0
+
             if valid_gaze_pos:
                 # If we have a gaze position from the tracker, update gc stim
                 # and text stim
@@ -163,14 +178,14 @@ for block in range(BLOCK_REPS):
             text_stim.draw()
             if valid_gaze_pos:
                 if EYE_TRACKER:
-                gaze_dot.draw()
+                    gaze_dot.draw()
         
             # Display updated stim on screen
             flip_time = win.flip()
         
             # Check any new keyboard char events for a space key
             # If one is found, set the trial end variable
-            if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED:
+            if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED or button:
                 run_trial = False
     
         # Current Trial is Done
