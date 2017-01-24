@@ -35,7 +35,7 @@ EYE_TRACKER = 0; # 1: yes, 0: no
 SIMULATE = 1; # 1: yes, 0: no
 
 # toggle for presence of joystick (N64 only, currently)
-JOYSTICK = 1; # 1: yes, 0: no
+JOYSTICK = 0; # 1: yes, 0: no
     
 if EYE_TRACKER:
     # Set-up tracker configuration dict
@@ -57,11 +57,12 @@ if EYE_TRACKER:
 else:
     io = launchHubServer()
   
-if JOYSTICK:
+if JOYSTICK==0:
     # Initialize the joystick
     pygame.init()
+    pygame.joystick.init()    
     joystick = pygame.joystick.Joystick(0)
-    joystick.init() 
+    joystick.init()
 
 # Get iohub devices for future access
 keyboard = io.devices.keyboard
@@ -107,6 +108,9 @@ for block in range(BLOCK_REPS):
     # Run Trials.....
     for vidPath in videolist:
     
+        # Create False variable for joystick button        
+        button = 0;
+        
         # Create movie stim by loading movie from list
         mov = visual.MovieStim3(win, vidPath, size=(366, 332), fps = 30,
                                 flipVert=False, flipHoriz=False, loop=False) 
@@ -119,6 +123,9 @@ for block in range(BLOCK_REPS):
         
         # Start the movie stim by preparing it to play
         shouldflip = mov.play()
+        
+        # Create crude frame counter
+        frame = 0;
         
         while (run_trial is True)&(mov.status != visual.FINISHED):
                 
@@ -134,11 +141,6 @@ for block in range(BLOCK_REPS):
                 valid_gaze_pos = True
                 gaze_in_region = True
                 
-            if JOYSTICK:
-                pygame.event.get() # Look for joystick events
-                button = joystick.get_button( 7 ) # 'Z'-trigger button
-            else:
-                button = 0
 
             if valid_gaze_pos:
                 # If we have a gaze position from the tracker, update gc stim
@@ -158,6 +160,9 @@ for block in range(BLOCK_REPS):
                     # Draw movie stim again
                     shouldflip = mov.draw()
                     photodiode.draw()
+                    
+                    # Increase frame number count
+                    frame += 1
                 else:
                     gaze_in_region = 'No'
                     mov.status = visual.FINISHED
@@ -169,6 +174,7 @@ for block in range(BLOCK_REPS):
                     gaze_dot.setPos(gpos)
                 else:
                     text_stim.text = missing_gpos_str
+                            
             else:
                 # Otherwise just update text stim
                 text_stim.text = missing_gpos_str
@@ -182,6 +188,11 @@ for block in range(BLOCK_REPS):
         
             # Display updated stim on screen
             flip_time = win.flip()
+            
+            # Check joystick for trigger press
+            if JOYSTICK and frame%5==0:
+                pygame.event.poll() # Look for joystick events
+                button = joystick.get_button( 7 ) # 'Z'-trigger button
         
             # Check any new keyboard char events for a space key
             # If one is found, set the trial end variable
