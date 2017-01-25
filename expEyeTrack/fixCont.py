@@ -13,12 +13,15 @@ future versions should read compressed movies-
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
-import glob, time, pygame
+import glob, time, pygame, csv, datetime
 import numpy as np
 
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/virtBox_share/JonesStimset/identity1/'
 videolist = glob.glob(videopath + '*_audVid.avi')
+
+# Set header file name (according to current time)
+header_nm = 'hdr'+datetime.datetime.now().strftime("%m%d%Y_%H%M")
 
 # Number of trials of each stimulus to run
 BLOCK_REPS = 2
@@ -31,18 +34,23 @@ SCALE = 1
 # Total trial count for experiment
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
-# Create new stimulus order
-new_order = np.tile(np.random.permutation(len(videolist)),BLOCK_REPS)
-# Re-order stimulus list
+# Create new stimulus order for entire experiment
+perm_list = [ np.random.permutation(len(videolist)) for i in range(BLOCK_REPS) ]
+new_order = np.concatenate(perm_list)
+
+# Re-order (and grow, if necessary) stimulus list
 videolist = [ videolist[i] for i in new_order]
 
-# Create jitter times
+# Create jitter times (uniformly distributed)
 jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
 
-# Create header
-
+# Create timing lists
+SCR_OPEN = [None] * TRIAL_COUNT
+SCR_CLOSE = [None] * TRIAL_COUNT
+ISI_END = [None] * TRIAL_COUNT
+        
 # toggle for debugging mode
-TESTING = 1; # 1: yes, 0: no
+TESTING = 0; # 1: yes, 0: no
 
 # toggle for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
@@ -142,7 +150,7 @@ for TRIAL_N in range(TRIAL_COUNT):
     if EYE_TRACKER:
         tracker.setRecordingState(True)
     run_trial = True
-    tstart_time = core.getTime()
+    SCR_OPEN[TRIAL_N] = core.getTime()
         
     # Start the movie stim by preparing it to play
     shouldflip = mov.play()
@@ -229,17 +237,32 @@ for TRIAL_N in range(TRIAL_COUNT):
     text_stim.draw()
     # Display updated stim on screen
     flip_time = win.flip(clearBuffer=True)
+    
+    SCR_CLOSE[TRIAL_N] = core.getTime()
         
     if EYE_TRACKER:
         # Stop eye data recording
         tracker.setRecordingState(False)
         
     time.sleep(ISI + jitter_times[TRIAL_N])
+    
+    ISI_END[TRIAL_N] = core.getTime()
 
 # All Trials are done
+
+# Create header array from lists
+head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END)
+
+# Write header array to csv file
+with open(header_nm + '.csv', 'wb') as f:
+    writer = csv.writer(f)
+    for val in head:
+        writer.writerow(val)
+        
 # End experiment
 win.close()
 if EYE_TRACKER:
     tracker.setConnectionState(False)
 io.quit()
 core.quit()
+
