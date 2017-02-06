@@ -13,18 +13,24 @@ future versions should read compressed movies-
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
-import glob, time, pygame, csv, datetime
+# Manually select audio library for psychopy
+from psychopy import prefs
+prefs.general['audioLib'] = ['pygame']
+from psychopy import sound
+
+import glob, time, pygame, csv, datetime, gtk
 import numpy as np
 
 # Find movies matching wildcard search
-videopath = '/home/adam/Desktop/virtBox_share/JonesStimset/identity1/'
-videolist = glob.glob(videopath + '*_audVid.avi')
+videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
+videolist = glob.glob(videopath + '*.avi')
 
 # Set header file name (according to current time)
+headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
 header_nm = 'hdr'+datetime.datetime.now().strftime("%m%d%Y_%H%M")
 
 # Number of trials of each stimulus to run
-BLOCK_REPS = 2
+BLOCK_REPS = 1
 # Inter-stimulus interval (seconds)
 ISI = .5
 # Jitter range (+/-seconds)
@@ -55,20 +61,25 @@ TESTING = 0; # 1: yes, 0: no
 # toggle for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
 # toggle to simulate tracker activity with mouse
-SIMULATE = 1; # 1: yes, 0: no
+SIMULATE = 0; # 1: yes, 0: no
 
 # toggle for presence of joystick (N64 only, currently)
 JOYSTICK = 0; # 1: yes, 0: no
+
+# Get current screen size (works for single monitor only)
+width = gtk.gdk.screen_width()
+height = gtk.gdk.screen_height()
+
 # Set-up screen
 if TESTING:
     FLSCRN = False
-    SCREEN_SIZE = np.array([280, 200])
+    SCREEN_SIZE = floor(np.array([width, height])/3)
 else:
     FLSCRN = True
-    SCREEN_SIZE = np.array([1280, 1024]) 
+    SCREEN_SIZE = np.array([width, height])
     
 # Set-up photodiode
-PHOTO_SIZE = 100
+PHOTO_SIZE = 50
 PHOTO_POS = (SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1]
     
 if EYE_TRACKER:
@@ -116,7 +127,7 @@ win = visual.Window(SCREEN_SIZE.tolist(),
 # Define window objects
 gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
-                              size=(66, 66), color='green', units='pix')
+                              size=(33, 33), color='green', units='pix')
 photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist(),
                                 size=100)
 
@@ -137,30 +148,38 @@ globalClock = core.Clock()  # to track the time since experiment started
 
 # Run Trials.....
 #for vidPath in videolist:
-for TRIAL_N in range(TRIAL_COUNT):
+for trial_num in range(TRIAL_COUNT):
     
     # Create False variable for joystick button        
     button = 0;
         
     # Create movie stim by loading movie from list
-    mov = visual.MovieStim3(win, videolist[TRIAL_N], size=(366, 332), fps = 30,
+    mov = visual.MovieStim3(win, videolist[trial_num], size=(366, 332), fps = 30,
                             flipVert=False, flipHoriz=False, loop=False) 
     
     io.clearEvents()
     if EYE_TRACKER:
         tracker.setRecordingState(True)
+    
+    # Initialize boolean to finish current movie
     run_trial = True
-    SCR_OPEN[TRIAL_N] = core.getTime()
+    
+    # Initialize boolean to break and end experiment
+    break_trial = False
+    
+    # Add timing of movie opening to header
+    SCR_OPEN[trial_num] = core.getTime()
         
     # Start the movie stim by preparing it to play
     shouldflip = mov.play()
         
-    # Create crude frame counter
-    frame = 0;
+    # Initialize frame counter
+    frame_num = 0;
         
+    # If boolean to finish current movie AND movie has not finished yet
     while (run_trial is True)&(mov.status != visual.FINISHED):
                 
-        # if tracker is on, test whether subject is fixating
+        # if tracker is on
         if EYE_TRACKER:
             # Get the latest gaze position in display coord space
             gpos = tracker.getLastGazePosition()
@@ -171,11 +190,12 @@ for TRIAL_N in range(TRIAL_COUNT):
         else: # else ignore
             valid_gaze_pos = True
             gaze_in_region = True
-                
 
+        # If we have a gaze position from the tracker,
+        # test whether subject is fixating
         if valid_gaze_pos:
-            # If we have a gaze position from the tracker, update gc stim
-            # and text stim
+            
+            # Update movie and text stim
             if gaze_in_region:
                 gaze_in_region = 'Yes'
                     
@@ -190,18 +210,21 @@ for TRIAL_N in range(TRIAL_COUNT):
                         
                 # Draw movie stim again
                 shouldflip = mov.draw()
+                
+                # Draw photodiode patch
                 photodiode.draw()
                     
-                # Increase frame number count
-                frame += 1
+                # Increment frame count
+                frame_num += 1
+                
             else:
                 gaze_in_region = 'No'
                 mov.status = visual.FINISHED
                         
-            #TRIAL_N = t + block * len(videolist)
+            #trial_num = t + block * len(videolist)
             # Update text
             if EYE_TRACKER:
-                text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, TRIAL_N)
+                text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, trial_num)
                 gaze_dot.setPos(gpos)
             else:
                 text_stim.text = missing_gpos_str
@@ -221,14 +244,27 @@ for TRIAL_N in range(TRIAL_COUNT):
         flip_time = win.flip()
             
         # Check joystick for trigger press
-        if JOYSTICK and frame%5==0:
+        if JOYSTICK and frame_num%5==0:
             pygame.event.poll() # Look for joystick events
             button = joystick.get_button( 7 ) # 'Z'-trigger button
         
+        keys = keyboard.getPresses()
+
         # Check any new keyboard char events for a space key
         # If one is found, set the trial end variable
         if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED or button:
             run_trial = False
+            
+        # Check any new keyboard char events for a 'q' key
+        # If one is found, set the trial break variable
+        if 'q' in keys:
+            break_trial = True
+            break
+    
+    # Current Trial is Done
+    # If trial break variable is set, break trial
+    if break_trial:
+        break
     
     # Current Trial is Done
     
@@ -238,15 +274,15 @@ for TRIAL_N in range(TRIAL_COUNT):
     # Display updated stim on screen
     flip_time = win.flip(clearBuffer=True)
     
-    SCR_CLOSE[TRIAL_N] = core.getTime()
+    SCR_CLOSE[trial_num] = core.getTime()
         
     if EYE_TRACKER:
         # Stop eye data recording
         tracker.setRecordingState(False)
         
-    time.sleep(ISI + jitter_times[TRIAL_N])
+    time.sleep(ISI + jitter_times[trial_num])
     
-    ISI_END[TRIAL_N] = core.getTime()
+    ISI_END[trial_num] = core.getTime()
 
 # All Trials are done
 
@@ -254,10 +290,13 @@ for TRIAL_N in range(TRIAL_COUNT):
 head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END)
 
 # Write header array to csv file
-with open(header_nm + '.csv', 'wb') as f:
+with open(headerpath + header_nm + '.csv', 'wb') as f:
     writer = csv.writer(f)
     for val in head:
         writer.writerow(val)
+        
+# Tell user about saved header
+print "Header file saved: " + header_nm
         
 # End experiment
 win.close()
@@ -265,4 +304,3 @@ if EYE_TRACKER:
     tracker.setConnectionState(False)
 io.quit()
 core.quit()
-
