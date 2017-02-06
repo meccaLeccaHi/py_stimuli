@@ -243,11 +243,12 @@ for trial_num in range(TRIAL_COUNT):
         # Display updated stim on screen
         flip_time = win.flip()
             
-        # Check joystick for trigger press
+        # Check joystick for trigger presses
         if JOYSTICK and frame_num%5==0:
             pygame.event.poll() # Look for joystick events
             button = joystick.get_button( 7 ) # 'Z'-trigger button
         
+        # Check keyboard for button presses
         keys = keyboard.getPresses()
 
         # Check any new keyboard char events for a space key
@@ -274,14 +275,17 @@ for trial_num in range(TRIAL_COUNT):
     # Display updated stim on screen
     flip_time = win.flip(clearBuffer=True)
     
+    # Log movie end time for header
     SCR_CLOSE[trial_num] = core.getTime()
         
     if EYE_TRACKER:
         # Stop eye data recording
         tracker.setRecordingState(False)
         
+    # Pause for ISI +/- random jitter duration
     time.sleep(ISI + jitter_times[trial_num])
     
+    # Log ISI end time for header
     ISI_END[trial_num] = core.getTime()
 
 # All Trials are done
