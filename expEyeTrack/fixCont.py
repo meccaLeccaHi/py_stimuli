@@ -13,19 +13,21 @@ future versions should read compressed movies-
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
-# Manually select audio library for psychopy
+# Force psychopy to use particular audio library
 from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
 from psychopy import sound
 
-import glob, time, pygame, csv, datetime, gtk
+import glob, time, csv, datetime, gtk
 import numpy as np
+import struct, array
+from fcntl import ioctl
 
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
 videolist = glob.glob(videopath + '*.avi')
 
-# Set header file name (according to current time)
+# Set header path and file name (according to current time)
 headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
 header_nm = 'hdr'+datetime.datetime.now().strftime("%m%d%Y_%H%M")
 
@@ -50,21 +52,25 @@ videolist = [ videolist[i] for i in new_order]
 # Create jitter times (uniformly distributed)
 jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
 
-# Create timing lists
+# Pre-allocate timing lists
 SCR_OPEN = [None] * TRIAL_COUNT
 SCR_CLOSE = [None] * TRIAL_COUNT
 ISI_END = [None] * TRIAL_COUNT
-        
-# toggle for debugging mode
+
+# Pre-allocate response list
+RESP = [None] * TRIAL_COUNT
+RESP_TIME = [None] * TRIAL_COUNT
+
+# Boolean for debugging mode
 TESTING = 0; # 1: yes, 0: no
 
-# toggle for presence of tracker
+# Boolean for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
-# toggle to simulate tracker activity with mouse
+# Boolean to simulate tracker activity with mouse
 SIMULATE = 0; # 1: yes, 0: no
 
-# toggle for presence of joystick (N64 only, currently)
-JOYSTICK = 0; # 1: yes, 0: no
+# Boolean for presence of joystick (N64 only, currently)
+JOYSTICK = 1; # 1: yes, 0: no
 
 # Get current screen size (works for single monitor only)
 width = gtk.gdk.screen_width()
@@ -101,29 +107,31 @@ if EYE_TRACKER:
     tracker = io.devices.tracker
 else:
     io = launchHubServer()
-  
-if JOYSTICK:
-    # Initialize the joystick
-    pygame.init()
-    pygame.joystick.init()    
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
 
-# Get iohub devices for future access
+# Get devices for future access
 keyboard = io.devices.keyboard
 display = io.devices.display
-
+    
 if EYE_TRACKER:
     # Run eyetracker calibration
     r = tracker.runSetupProcedure()
-    
+
+# Create window
 win = visual.Window(SCREEN_SIZE.tolist(),
                     units='pix',
                     fullscr=FLSCRN,
                     allowGUI=False,
-                    color='black'
+                    color='black', winType='pyglet'
                     )
 
+# Get joystick device
+if JOYSTICK:
+    pass
+#    joysticks = pyglet.input.get_joysticks()
+#    if joysticks:
+#        joystick = joysticks[0]
+#        joystick.open()
+    
 # Define window objects
 gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
@@ -150,9 +158,6 @@ globalClock = core.Clock()  # to track the time since experiment started
 #for vidPath in videolist:
 for trial_num in range(TRIAL_COUNT):
     
-    # Create False variable for joystick button        
-    button = 0;
-        
     # Create movie stim by loading movie from list
     mov = visual.MovieStim3(win, videolist[trial_num], size=(366, 332), fps = 30,
                             flipVert=False, flipHoriz=False, loop=False) 
@@ -165,7 +170,7 @@ for trial_num in range(TRIAL_COUNT):
     run_trial = True
     
     # Initialize boolean to break and end experiment
-    break_trial = False
+    break_exp = False
     
     # Add timing of movie opening to header
     SCR_OPEN[trial_num] = core.getTime()
@@ -218,11 +223,12 @@ for trial_num in range(TRIAL_COUNT):
                 frame_num += 1
                 
             else:
+                # If gave leaves region, end trial
                 gaze_in_region = 'No'
                 mov.status = visual.FINISHED
                         
             #trial_num = t + block * len(videolist)
-            # Update text
+            # Update text on screen
             if EYE_TRACKER:
                 text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, trial_num)
                 gaze_dot.setPos(gpos)
@@ -233,7 +239,7 @@ for trial_num in range(TRIAL_COUNT):
             # Otherwise just update text stim
             text_stim.text = missing_gpos_str
         
-        # Redraw stim
+        # Redraw screen without movie stimuli
         gaze_ok_region.draw()
         text_stim.draw()
         if valid_gaze_pos:
@@ -242,29 +248,35 @@ for trial_num in range(TRIAL_COUNT):
         
         # Display updated stim on screen
         flip_time = win.flip()
-            
+
         # Check joystick for trigger presses
+            
         if JOYSTICK and frame_num%5==0:
-            pygame.event.poll() # Look for joystick events
-            button = joystick.get_button( 7 ) # 'Z'-trigger button
+            pass
+##            pygame.event.poll() # Look for joystick events
+##            button = joystick.get_button( 7 ) # 'Z'-trigger button
+#            event, value, t1 = js.get_joyinput(timeout=10)
+#            if event=="joybuttonpress":
+#                RESP[trial_num] = value
+#                RESP_TIME[trial_num] = t1
         
         # Check keyboard for button presses
         keys = keyboard.getPresses()
 
         # Check any new keyboard char events for a space key
         # If one is found, set the trial end variable
-        if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED or button:
+        if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED:
             run_trial = False
             
         # Check any new keyboard char events for a 'q' key
-        # If one is found, set the trial break variable
+        # If one is found, set the experiment break boolean
         if 'q' in keys:
-            break_trial = True
+            break_exp = True
             break
     
     # Current Trial is Done
     # If trial break variable is set, break trial
-    if break_trial:
+    if break_exp:
         break
     
     # Current Trial is Done
@@ -291,7 +303,8 @@ for trial_num in range(TRIAL_COUNT):
 # All Trials are done
 
 # Create header array from lists
-head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END)
+head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END, \
+    RESP,RESP_TIME)
 
 # Write header array to csv file
 with open(headerpath + header_nm + '.csv', 'wb') as f:
