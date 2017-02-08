@@ -7,7 +7,7 @@ from inputs import get_gamepad
 
 exitFlag = 0
 
-class myThread (threading.Thread):
+class MyThread (threading.Thread):
     def __init__(self, threadID, name, delay):
         threading.Thread.__init__(self)
         self.threadID = threadID
@@ -37,13 +37,13 @@ def print_buttons( threadName, curr_time, delay, resp_list, resp_time):
     return resp_list, resp_time
 
 # Create new threads
-thread1 = myThread(1, "Thread-1", 15)
-#thread2 = myThread(2, "Thread-2", 3)
+thread1 = MyThread(1, "Thread-1", 15)
 
 # Start new Threads
 thread1.start()
-#thread2.start()
-for i in range(25):
+
+# Preoccupy the main thread
+for i in range(20):
     time.sleep(1)
     print(str(i))
     
