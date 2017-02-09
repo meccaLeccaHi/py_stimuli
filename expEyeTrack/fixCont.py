@@ -20,8 +20,39 @@ from psychopy import sound
 
 import glob, time, csv, datetime, gtk
 import numpy as np
-import struct, array
-from fcntl import ioctl
+#import struct
+from inputs import get_gamepad
+
+# Define a function for the joystick response
+def poll_buttons( delay ):
+    
+    curr_time = time.time()
+    resp = None
+    resp_time = None
+    time_left = 0
+    
+    # Draw decision cue to window
+    dec_img.draw()
+    win.flip()
+
+    while time.time()-curr_time < delay:
+        events = get_gamepad()
+        for event in events:
+            if event.state==1 and event.code in joy_hash:
+#                print(event.ev_type, event.code, event.state)
+                resp = event.code
+                resp_time = time.time()-curr_time
+                time_left = delay - resp_time
+                break
+        if resp!= None:
+#            IDENT_LIST
+            right_img.draw()
+            win.flip()
+            time.sleep(time_left)
+            break
+    
+    return resp, resp_time
+    
 
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
@@ -42,12 +73,23 @@ SCALE = 1
 # Total trial count for experiment
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
+# Create hash table for joystick inputs
+joy_hash = {}
+joy_hash['BTN_TRIGGER'] = 1
+joy_hash['BTN_THUMB'] = 2
+joy_hash['BTN_THUMB2'] = 3
+joy_hash['BTN_TOP'] = 4
+    
 # Create new stimulus order for entire experiment
 perm_list = [ np.random.permutation(len(videolist)) for i in range(BLOCK_REPS) ]
 new_order = np.concatenate(perm_list)
 
 # Re-order (and grow, if necessary) stimulus list
 videolist = [ videolist[i] for i in new_order]
+
+# Extract identity numbers from video list
+ident_ind = videolist[0].find("identity")+len("identity")
+IDENT_LIST = [x[ident_ind] for x in videolist]
 
 # Create jitter times (uniformly distributed)
 jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
@@ -79,14 +121,18 @@ height = gtk.gdk.screen_height()
 # Set-up screen
 if TESTING:
     FLSCRN = False
-    SCREEN_SIZE = floor(np.array([width, height])/3)
+    # Scale screen for testing
+    SCREEN_SIZE = np.array([(x/3) for x in (width, height)])
+    # We're referencing pixels, so must be in integer values
+    SCREEN_SIZE = np.floor(SCREEN_SIZE)
 else:
     FLSCRN = True
     SCREEN_SIZE = np.array([width, height])
     
 # Set-up photodiode
 PHOTO_SIZE = 50
-PHOTO_POS = (SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1]
+# Again, we're referencing pixels, so must be in integer values
+PHOTO_POS = np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1])
     
 if EYE_TRACKER:
     # Set-up tracker configuration dict
@@ -123,16 +169,12 @@ win = visual.Window(SCREEN_SIZE.tolist(),
                     allowGUI=False,
                     color='black', winType='pyglet'
                     )
-
-# Get joystick device
-if JOYSTICK:
-    pass
-#    joysticks = pyglet.input.get_joysticks()
-#    if joysticks:
-#        joystick = joysticks[0]
-#        joystick.open()
     
 # Define window objects
+dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
+right_img = visual.ImageStim(win=win,image="right.png",units="pix")
+wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
+
 gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
                               size=(33, 33), color='green', units='pix')
@@ -165,10 +207,7 @@ for trial_num in range(TRIAL_COUNT):
     io.clearEvents()
     if EYE_TRACKER:
         tracker.setRecordingState(True)
-    
-    # Initialize boolean to finish current movie
-    run_trial = True
-    
+     
     # Initialize boolean to break and end experiment
     break_exp = False
     
@@ -178,12 +217,9 @@ for trial_num in range(TRIAL_COUNT):
     # Start the movie stim by preparing it to play
     shouldflip = mov.play()
         
-    # Initialize frame counter
-    frame_num = 0;
-        
     # If boolean to finish current movie AND movie has not finished yet
-    while (run_trial is True)&(mov.status != visual.FINISHED):
-                
+    while mov.status != visual.FINISHED:
+        
         # if tracker is on
         if EYE_TRACKER:
             # Get the latest gaze position in display coord space
@@ -203,24 +239,12 @@ for trial_num in range(TRIAL_COUNT):
             # Update movie and text stim
             if gaze_in_region:
                 gaze_in_region = 'Yes'
-                    
-                # Only flip when a new frame should be displayed
-                if shouldflip:
-                    # Movie has already been drawn, so just draw text stim and flip
-                    text.draw()
-                    win.flip()
-                else:
-                    # Give the OS a break if a flip is not needed
-                    time.sleep(0.001)
                         
                 # Draw movie stim again
                 shouldflip = mov.draw()
                 
                 # Draw photodiode patch
                 photodiode.draw()
-                    
-                # Increment frame count
-                frame_num += 1
                 
             else:
                 # If gave leaves region, end trial
@@ -248,31 +272,21 @@ for trial_num in range(TRIAL_COUNT):
         
         # Display updated stim on screen
         flip_time = win.flip()
-
-        # Check joystick for trigger presses
-            
-        if JOYSTICK and frame_num%5==0:
-            pass
-##            pygame.event.poll() # Look for joystick events
-##            button = joystick.get_button( 7 ) # 'Z'-trigger button
-#            event, value, t1 = js.get_joyinput(timeout=10)
-#            if event=="joybuttonpress":
-#                RESP[trial_num] = value
-#                RESP_TIME[trial_num] = t1
         
         # Check keyboard for button presses
         keys = keyboard.getPresses()
 
         # Check any new keyboard char events for a space key
         # If one is found, set the trial end variable
-        if ' ' in keyboard.getPresses() or mov.status == visual.FINISHED:
-            run_trial = False
+        if ' ' in keyboard.getPresses():
+            mov.status = visual.FINISHED
             
         # Check any new keyboard char events for a 'q' key
         # If one is found, set the experiment break boolean
         if 'q' in keys:
             break_exp = True
             break
+            # in the future- this can run some method to save the header then "exit(0)"
     
     # Current Trial is Done
     # If trial break variable is set, break trial
@@ -293,9 +307,16 @@ for trial_num in range(TRIAL_COUNT):
     if EYE_TRACKER:
         # Stop eye data recording
         tracker.setRecordingState(False)
-        
-    # Pause for ISI +/- random jitter duration
-    time.sleep(ISI + jitter_times[trial_num])
+     
+    delay = ISI + jitter_times[trial_num]
+    
+    # Check joystick for button presses
+    if JOYSTICK:
+        # Poll joystick for n seconds
+        RESP[trial_num], RESP_TIME[trial_num] = poll_buttons(delay)
+    else:
+        # Pause for n seconds
+        time.sleep(delay)
     
     # Log ISI end time for header
     ISI_END[trial_num] = core.getTime()
@@ -304,7 +325,7 @@ for trial_num in range(TRIAL_COUNT):
 
 # Create header array from lists
 head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END, \
-    RESP,RESP_TIME)
+    IDENT_LIST,RESP,RESP_TIME)
 
 # Write header array to csv file
 with open(headerpath + header_nm + '.csv', 'wb') as f:
