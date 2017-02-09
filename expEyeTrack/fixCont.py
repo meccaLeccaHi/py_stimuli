@@ -33,6 +33,7 @@ def poll_buttons( delay ):
     
     # Draw decision cue to window
     dec_img.draw()
+    text_stim.draw()
     win.flip()
 
     while time.time()-curr_time < delay:
@@ -45,14 +46,19 @@ def poll_buttons( delay ):
                 time_left = delay - resp_time
                 break
         if resp!= None:
-#            IDENT_LIST
-            right_img.draw()
+            if resp==IDENT_LIST[trial_num]:
+                CORRECT[trial_num] = 1
+                right_img.draw()
+            else:
+                CORRECT[trial_num] = 0
+                wrong_img.draw()
+            text_stim.draw()
             win.flip()
             time.sleep(time_left)
             break
+        del events
     
     return resp, resp_time
-    
 
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
@@ -65,7 +71,7 @@ header_nm = 'hdr'+datetime.datetime.now().strftime("%m%d%Y_%H%M")
 # Number of trials of each stimulus to run
 BLOCK_REPS = 1
 # Inter-stimulus interval (seconds)
-ISI = .5
+ISI = 1
 # Jitter range (+/-seconds)
 JITTER = .1
 # Scaling of image (none = 1)
@@ -75,21 +81,21 @@ TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
 # Create hash table for joystick inputs
 joy_hash = {}
-joy_hash['BTN_TRIGGER'] = 1
-joy_hash['BTN_THUMB'] = 2
-joy_hash['BTN_THUMB2'] = 3
-joy_hash['BTN_TOP'] = 4
+joy_hash['BTN_TRIGGER'] = 0
+joy_hash['BTN_THUMB'] = 1
+joy_hash['BTN_THUMB2'] = 2
+joy_hash['BTN_TOP'] = 3
     
 # Create new stimulus order for entire experiment
 perm_list = [ np.random.permutation(len(videolist)) for i in range(BLOCK_REPS) ]
 new_order = np.concatenate(perm_list)
 
 # Re-order (and grow, if necessary) stimulus list
-videolist = [ videolist[i] for i in new_order]
+videolist = [ videolist[i] for i in new_order ]
 
 # Extract identity numbers from video list
 ident_ind = videolist[0].find("identity")+len("identity")
-IDENT_LIST = [x[ident_ind] for x in videolist]
+IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
 
 # Create jitter times (uniformly distributed)
 jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
@@ -102,6 +108,8 @@ ISI_END = [None] * TRIAL_COUNT
 # Pre-allocate response list
 RESP = [None] * TRIAL_COUNT
 RESP_TIME = [None] * TRIAL_COUNT
+CORRECT = [None] * TRIAL_COUNT
+CORRECT[0] = 0
 
 # Boolean for debugging mode
 TESTING = 0; # 1: yes, 0: no
@@ -109,7 +117,7 @@ TESTING = 0; # 1: yes, 0: no
 # Boolean for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
 # Boolean to simulate tracker activity with mouse
-SIMULATE = 0; # 1: yes, 0: no
+SIMULATE = 1; # 1: yes, 0: no
 
 # Boolean for presence of joystick (N64 only, currently)
 JOYSTICK = 1; # 1: yes, 0: no
@@ -180,13 +188,11 @@ gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
                               size=(33, 33), color='green', units='pix')
 photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist(),
                                 size=100)
-
+                                
+    
 text_stim_str = 'Eye Position: %.2f, %.2f. In Region: %s\n'
-text_stim_str += 'Trial #: %d\n'
-text_stim_str += 'Press space key to skip trial.'
 
 missing_gpos_str = 'Eye Position: MISSING. In Region: No\n'
-missing_gpos_str += 'Press space key to skip trial.'
 text_stim = visual.TextStim(win, text=text_stim_str,
                             pos=[0, int((-win.size[1]/2)*0.8)], height=24,
                                  color='white',
@@ -263,6 +269,14 @@ for trial_num in range(TRIAL_COUNT):
             # Otherwise just update text stim
             text_stim.text = missing_gpos_str
         
+        if JOYSTICK:
+            average = int(np.mean([x for x in CORRECT if x is not None])*100)
+            perc_corr_str = "Ave. Correct: {}%\n".format(average)
+        else:
+            perc_corr_str = ""
+        text_stim.text += "Trial Number: {}\n".format(trial_num)
+        text_stim.text += perc_corr_str
+            
         # Redraw screen without movie stimuli
         gaze_ok_region.draw()
         text_stim.draw()
@@ -322,10 +336,12 @@ for trial_num in range(TRIAL_COUNT):
     ISI_END[trial_num] = core.getTime()
 
 # All Trials are done
-
+win.close()
+if EYE_TRACKER:
+    tracker.setConnectionState(False)
+    
 # Create header array from lists
-head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END, \
-    IDENT_LIST,RESP,RESP_TIME)
+head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT)
 
 # Write header array to csv file
 with open(headerpath + header_nm + '.csv', 'wb') as f:
@@ -337,8 +353,5 @@ with open(headerpath + header_nm + '.csv', 'wb') as f:
 print "Header file saved: " + header_nm
         
 # End experiment
-win.close()
-if EYE_TRACKER:
-    tracker.setConnectionState(False)
 io.quit()
 core.quit()
