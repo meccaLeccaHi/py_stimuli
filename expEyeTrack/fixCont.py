@@ -271,14 +271,15 @@ for trial_num in range(TRIAL_COUNT):
         
         if JOYSTICK:
             average = int(np.mean([x for x in CORRECT if x is not None])*100)
-            perc_corr_str = "Ave. Correct: {}%\n".format(average)
+            perc_corr_str = "Correct: {}%".format(average)
         else:
             perc_corr_str = ""
         text_stim.text += "Trial Number: {}\n".format(trial_num)
         text_stim.text += perc_corr_str
             
         # Redraw screen without movie stimuli
-        gaze_ok_region.draw()
+        if EYE_TRACKER:
+            gaze_ok_region.draw()
         text_stim.draw()
         if valid_gaze_pos:
             if EYE_TRACKER:
@@ -310,7 +311,8 @@ for trial_num in range(TRIAL_COUNT):
     # Current Trial is Done
     
     # Redraw stim
-    gaze_ok_region.draw()
+    if EYE_TRACKER:
+        gaze_ok_region.draw()
     text_stim.draw()
     # Display updated stim on screen
     flip_time = win.flip(clearBuffer=True)
