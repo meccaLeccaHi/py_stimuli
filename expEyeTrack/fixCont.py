@@ -40,7 +40,7 @@ def poll_buttons( delay ):
         for event in events:
             if event.state==1 and event.code in joy_hash:
 #                print(event.ev_type, event.code, event.state)
-                resp = event.code
+                resp = joy_hash[event.code]
                 resp_time = time.time()-curr_time
                 time_left = delay - resp_time
                 break
