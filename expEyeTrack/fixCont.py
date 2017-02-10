@@ -23,6 +23,25 @@ import numpy as np
 #import struct
 from inputs import get_gamepad
 
+# Start screen function
+def start_screen( win ):
+
+    img = visual.ImageStim(win=win, image="startscreen.png",
+                                    units="pix")
+    size_x = img.size[0]
+    size_y = img.size[1]
+    img.size = [size_x * SCALE, size_y * SCALE]
+
+    img.draw()
+    win.flip()
+
+    # Wait on 'Start' button press
+    while True:
+        events = get_gamepad()
+        for event in events:
+            if event.state==1 and event.code=='BTN_BASE4':
+                break
+        break
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -131,7 +150,7 @@ CORRECT = [None] * TRIAL_COUNT
 CORRECT[0] = 0
 
 # Boolean for debugging mode
-TESTING = 0; # 1: yes, 0: no
+TESTING = 1; # 1: yes, 0: no
 
 # Boolean for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
@@ -139,7 +158,7 @@ EYE_TRACKER = 0; # 1: yes, 0: no
 SIMULATE = 1; # 1: yes, 0: no
 
 # Boolean for presence of joystick (N64 only, currently)
-JOYSTICK = 0; # 1: yes, 0: no
+JOYSTICK = 1; # 1: yes, 0: no
 
 # Get current screen size (works for single monitor only)
 width = gtk.gdk.screen_width()
@@ -202,6 +221,8 @@ win = visual.Window(SCREEN_SIZE.tolist(),
     
 # Define window objects
 if JOYSTICK:
+    # Display start screen and wait for user to press 'Start'
+    start_screen(win)
     dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
     right_img = visual.ImageStim(win=win,image="right.png",units="pix")
     wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
