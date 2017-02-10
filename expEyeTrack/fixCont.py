@@ -34,10 +34,10 @@ def start_screen( win ):
     img.draw()
     win.flip()
     
-#    # Play music
-#    filesound = sound.Sound(value = 'C:\\TestSounds\\WindowsHardwareInsert.wav')
-#    filesound.setVolume(1.0)
-#    filesound.play() 
+    # Play music
+    filesound = sound.Sound(value = "theme.wav")
+    filesound.setVolume(.2)
+    filesound.play() 
 
     # Wait on 'Start' button press
     while True:
@@ -46,6 +46,41 @@ def start_screen( win ):
             if event.state==1 and event.code==start:
                 break
         if event.code==start:
+            filesound.stop()
+            break
+        
+# Give subject instructions
+def instruct_screen( win ):
+    
+    text = visual.TextStim(win, text='Watch me slide!')
+
+    # Play music
+    filesound = sound.Sound(value = "mission-briefing.wav")
+    filesound.setVolume(.2)
+    filesound.play()
+    
+    # Animate
+    start_pos = 0
+    stop_pos = 1
+    duration = 6
+
+    # Create text instructions
+    text.pos = [start_pos,start_pos]
+    step_pos = (stop_pos-start_pos)/duration
+    while text.pos[0]<stop_pos:
+        text.pos[0] += step_pos  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
+        text.pos[1] += step_pos        
+        text.draw()
+        win.flip()
+
+    # Wait on 'Start' button press
+    while True:
+        events = get_gamepad()
+        for event in events:
+            if event.state==1 and event.code==start:
+                break
+        if event.code==start:
+            filesound.stop()
             break
 
 # Joystick response function
@@ -157,7 +192,7 @@ CORRECT = [None] * TRIAL_COUNT
 CORRECT[0] = 0
 
 # Boolean for debugging mode
-TESTING = 0; # 1: yes, 0: no
+TESTING = 1; # 1: yes, 0: no
 
 # Boolean for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
@@ -228,8 +263,12 @@ win = visual.Window(SCREEN_SIZE.tolist(),
     
 # Define window objects
 if JOYSTICK:
+    
     # Display start screen and wait for user to press 'Start'
     start_screen(win)
+    # Display instruction screen, then wait for user to press 'Start'
+    instruct_screen( win )
+    
     dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
     right_img = visual.ImageStim(win=win,image="right.png",units="pix")
     wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
