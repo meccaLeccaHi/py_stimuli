@@ -26,18 +26,22 @@ from inputs import get_gamepad
 # Start screen function
 def start_screen( win ):
 
-    img = visual.ImageStim(win=win, image="startScreen.png",
+    img = visual.ImageStim(win=win, image="start_screen.png",
                                     units="pix")
-    SCALE = .5                                
-    img.size *= SCALE  # scale the image relative to initial size
+#    img.size *= SCALE  # scale the image relative to initial size
 
+    # Draw the image to window and show on screen
     img.draw()
     win.flip()
+    
+#    # Play music
+#    filesound = sound.Sound(value = 'C:\\TestSounds\\WindowsHardwareInsert.wav')
+#    filesound.setVolume(1.0)
+#    filesound.play() 
 
     # Wait on 'Start' button press
     while True:
         events = get_gamepad()
-        
         for event in events:
             if event.state==1 and event.code==start:
                 break
