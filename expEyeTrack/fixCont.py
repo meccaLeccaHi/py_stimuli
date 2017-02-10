@@ -26,11 +26,10 @@ from inputs import get_gamepad
 # Start screen function
 def start_screen( win ):
 
-    img = visual.ImageStim(win=win, image="startscreen.png",
+    img = visual.ImageStim(win=win, image="startScreen.png",
                                     units="pix")
-    size_x = img.size[0]
-    size_y = img.size[1]
-    img.size = [size_x * SCALE, size_y * SCALE]
+    SCALE = .5                                
+    img.size *= SCALE  # scale the image relative to initial size
 
     img.draw()
     win.flip()
@@ -38,10 +37,12 @@ def start_screen( win ):
     # Wait on 'Start' button press
     while True:
         events = get_gamepad()
+        
         for event in events:
-            if event.state==1 and event.code=='BTN_BASE4':
+            if event.state==1 and event.code==start:
                 break
-        break
+        if event.code==start:
+            break
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -123,6 +124,8 @@ joy_hash['BTN_TRIGGER'] = 0
 joy_hash['BTN_THUMB'] = 1
 joy_hash['BTN_THUMB2'] = 2
 joy_hash['BTN_TOP'] = 3
+
+start = 'BTN_BASE4'
     
 # Create new stimulus order for entire experiment
 perm_list = [ np.random.permutation(len(videolist)) for i in range(BLOCK_REPS) ]
@@ -150,7 +153,7 @@ CORRECT = [None] * TRIAL_COUNT
 CORRECT[0] = 0
 
 # Boolean for debugging mode
-TESTING = 1; # 1: yes, 0: no
+TESTING = 0; # 1: yes, 0: no
 
 # Boolean for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
