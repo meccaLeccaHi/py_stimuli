@@ -23,7 +23,8 @@ import numpy as np
 #import struct
 from inputs import get_gamepad
 
-# Define a function for the joystick response
+
+# Joystick response function
 def poll_buttons( delay ):
     
     curr_time = time.time()
@@ -31,7 +32,7 @@ def poll_buttons( delay ):
     resp_time = None
     time_left = 0
     
-    # Draw decision cue to window
+    # Draw decision cue in window
     dec_img.draw()
     text_stim.draw()
     win.flip()
@@ -59,6 +60,24 @@ def poll_buttons( delay ):
         del events
     
     return resp, resp_time
+
+
+# Save log file function    
+def save_logs():
+    # Create header array from lists
+    head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT)
+
+    # Write header array to csv file
+    with open(headerpath + header_nm + '.csv', 'wb') as f:
+        writer = csv.writer(f)
+        for val in head:
+            writer.writerow(val)
+        
+    # Tell user about saved header
+    print "Header file saved: " + header_nm
+
+
+## Initialize variables
 
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
@@ -120,13 +139,13 @@ EYE_TRACKER = 0; # 1: yes, 0: no
 SIMULATE = 1; # 1: yes, 0: no
 
 # Boolean for presence of joystick (N64 only, currently)
-JOYSTICK = 1; # 1: yes, 0: no
+JOYSTICK = 0; # 1: yes, 0: no
 
 # Get current screen size (works for single monitor only)
 width = gtk.gdk.screen_width()
 height = gtk.gdk.screen_height()
 
-# Set-up screen
+# Set screen parameters
 if TESTING:
     FLSCRN = False
     # Scale screen for testing
@@ -137,13 +156,15 @@ else:
     FLSCRN = True
     SCREEN_SIZE = np.array([width, height])
     
-# Set-up photodiode
+# Set up photodiode
 PHOTO_SIZE = 50
-# Again, we're referencing pixels, so must be in integer values
+# Pixels must be integers
 PHOTO_POS = np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1])
-    
+
+
+## Initialize devices    
 if EYE_TRACKER:
-    # Set-up tracker configuration dict
+    # Set up eye-tracker configuration dict
     iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
     eyetracker_config = dict()
     eyetracker_config['name'] = 'tracker'
@@ -170,7 +191,8 @@ if EYE_TRACKER:
     # Run eyetracker calibration
     r = tracker.runSetupProcedure()
 
-# Create window
+
+## Create window
 win = visual.Window(SCREEN_SIZE.tolist(),
                     units='pix',
                     fullscr=FLSCRN,
@@ -179,9 +201,10 @@ win = visual.Window(SCREEN_SIZE.tolist(),
                     )
     
 # Define window objects
-dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
-right_img = visual.ImageStim(win=win,image="right.png",units="pix")
-wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
+if JOYSTICK:
+    dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
+    right_img = visual.ImageStim(win=win,image="right.png",units="pix")
+    wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
 
 gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
@@ -199,16 +222,19 @@ text_stim = visual.TextStim(win, text=text_stim_str,
                                  alignHoriz='center',
                                  alignVert='center', 
                                  wrapWidth=win.size[0] * .9)
-                                 
+
+
+## Launch experiment                                 
 globalClock = core.Clock()  # to track the time since experiment started
 
 # Run Trials.....
-#for vidPath in videolist:
 for trial_num in range(TRIAL_COUNT):
     
+    # Get current average percent correct
+    average = str(int(np.mean([x for x in CORRECT if x is not None])*100))   
+    
     # Create movie stim by loading movie from list
-    mov = visual.MovieStim3(win, videolist[trial_num], size=(366, 332), fps = 30,
-                            flipVert=False, flipHoriz=False, loop=False) 
+    mov = visual.MovieStim3(win, videolist[trial_num]) 
     
     io.clearEvents()
     if EYE_TRACKER:
@@ -269,13 +295,9 @@ for trial_num in range(TRIAL_COUNT):
             # Otherwise just update text stim
             text_stim.text = missing_gpos_str
         
-        if JOYSTICK:
-            average = int(np.mean([x for x in CORRECT if x is not None])*100)
-            perc_corr_str = "Correct: {}%".format(average)
-        else:
-            perc_corr_str = ""
         text_stim.text += "Trial Number: {}\n".format(trial_num)
-        text_stim.text += perc_corr_str
+        if JOYSTICK:
+            text_stim.text += "Correct: " + average + "%"
             
         # Redraw screen without movie stimuli
         if EYE_TRACKER:
@@ -333,7 +355,7 @@ for trial_num in range(TRIAL_COUNT):
     else:
         # Pause for n seconds
         time.sleep(delay)
-    
+        
     # Log ISI end time for header
     ISI_END[trial_num] = core.getTime()
 
@@ -341,19 +363,12 @@ for trial_num in range(TRIAL_COUNT):
 win.close()
 if EYE_TRACKER:
     tracker.setConnectionState(False)
-    
-# Create header array from lists
-head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT)
 
-# Write header array to csv file
-with open(headerpath + header_nm + '.csv', 'wb') as f:
-    writer = csv.writer(f)
-    for val in head:
-        writer.writerow(val)
+
+## Save log files    
+save_logs()
+
         
-# Tell user about saved header
-print "Header file saved: " + header_nm
-        
-# End experiment
+## End experiment
 io.quit()
 core.quit()
