@@ -210,6 +210,7 @@ videolist = glob.glob(videopath + '*.avi')
 headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
 header_nm = 'hdr'+datetime.datetime.now().strftime("%m%d%Y_%H%M")
 
+
 # Number of trials of each stimulus to run
 BLOCK_REPS = 1
 # Inter-stimulus interval (seconds)
@@ -221,6 +222,19 @@ SCALE = 1
 # Total trial count for experiment
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
+# Boolean for debugging mode
+TESTING = 0; # 1: yes, 0: no
+# Boolean for including control stimuli
+CONTROLS = 0; # 1: yes, 0: no
+# Boolean for presence of tracker
+EYE_TRACKER = 0; # 1: yes, 0: no
+# Boolean to simulate tracker activity with mouse
+SIMULATE = 1; # 1: yes, 0: no
+# Boolean for presence of joystick (N64 only, currently)
+JOYSTICK = 1; # 1: yes, 0: no
+# Boolean for intro music
+MUSIC = 1; # 1: yes, 0: no
+
 # Create hash table for joystick inputs
 joy_hash = {}
 joy_hash['BTN_TRIGGER'] = 0
@@ -230,10 +244,14 @@ joy_hash['BTN_TOP'] = 3
 
 start = 'BTN_BASE4'
     
+# Include/remove noise controls
+if CONTROLS==0:
+    videolist = [x for x in videolist if not 'noisy' in x]
+    
 # Create new stimulus order for entire experiment
 perm_list = [ np.random.permutation(len(videolist)) for i in range(BLOCK_REPS) ]
 new_order = np.concatenate(perm_list)
-
+    
 # Re-order (and grow, if necessary) stimulus list
 videolist = [ videolist[i] for i in new_order ]
 
@@ -254,20 +272,6 @@ RESP = [None] * TRIAL_COUNT
 RESP_TIME = [None] * TRIAL_COUNT
 CORRECT = [None] * TRIAL_COUNT
 CORRECT[0] = 0
-
-# Boolean for debugging mode
-TESTING = 0; # 1: yes, 0: no
-
-# Boolean for presence of tracker
-EYE_TRACKER = 0; # 1: yes, 0: no
-# Boolean to simulate tracker activity with mouse
-SIMULATE = 1; # 1: yes, 0: no
-
-# Boolean for presence of joystick (N64 only, currently)
-JOYSTICK = 1; # 1: yes, 0: no
-
-# Boolean for intro music
-MUSIC = 1; # 1: yes, 0: no
 
 # Get current screen size (works for single monitor only)
 width = gtk.gdk.screen_width()
