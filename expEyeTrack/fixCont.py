@@ -66,7 +66,7 @@ def instruct_screen( win, start ):
     
     # Set up psychopy stuff
 #    win = visual.Window()
-    text = visual.TextStim(win, text=text_str)
+    text = visual.TextStim(win, text=text_str, height = 50)
     img = visual.ImageStim(win=win, image="stars.jpg",
                                         units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
@@ -87,10 +87,31 @@ def instruct_screen( win, start ):
         events = get_gamepad()
         for event in events:
             if event.state==1 and event.code==start:
+                # Animate
+                text.contrast = 1
+                for i in np.array(range(100))/100.0:
+                    print(i)
+                    text.contrast = 1-i  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
+                    img.draw()                    
+                    text.draw()    
+                    win.flip()
                 break
         if event.state==1 and event.code==start:
             filesound.stop()
             break
+        
+def readySet( win ):
+    
+    for i in range(3,0,-1):
+        text = visual.TextStim(win, text=(str(i)))
+
+        # Animate
+        text.contrast = 1
+        for i in np.array(range(100))/100.0:
+            print(i)
+            text.contrast = 1-i  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
+            text.draw()    
+            win.flip()
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -280,6 +301,9 @@ if JOYSTICK:
     dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
     right_img = visual.ImageStim(win=win,image="right.png",units="pix")
     wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
+
+# Countdown to start
+readySet( win )
 
 gaze_ok_region = visual.Circle(win, radius=200, units='pix')
 gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
