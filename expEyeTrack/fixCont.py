@@ -71,6 +71,7 @@ def instruct_screen( win, start ):
     # Set up psychopy stuff
 #    win = visual.Window()
     text = visual.TextStim(win, text=text_str, height = 50)
+    fin_text = visual.TextStim(win, text="Press <Start> to proceed", height = 50)
     img = visual.ImageStim(win=win, image="stars.jpg",
                                         units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
@@ -85,7 +86,11 @@ def instruct_screen( win, start ):
         win.flip()
         
     # Instruct user to press 'Start'
-
+    img.draw()
+    text.draw()
+    fin_text.draw()    
+    win.flip()
+        
     # Wait on 'Start' button press
     while True:
            
@@ -108,7 +113,8 @@ def instruct_screen( win, start ):
         
 def readySet( win ):
     
-    if MUSIC:
+    if MUSIC:#            text_stim.draw()
+
             filesound = sound.Sound(value = "beep.wav")
             filesound.setVolume(.1)
             
@@ -126,7 +132,7 @@ def readySet( win ):
             text.contrast = i 
             text.draw()    
             win.flip()
-        
+    
     # Show "Go!"
     text = visual.TextStim(win, height=48, text="Go!")
     text.draw()    
@@ -142,7 +148,6 @@ def poll_buttons( delay ):
     
     # Draw decision cue in window
     dec_img.draw()
-    text_stim.draw()
     tr_text.draw()
     tr_rect.draw()
     if JOYSTICK:
@@ -151,7 +156,8 @@ def poll_buttons( delay ):
     win.flip()
 
     while time.time()-curr_time < delay:
-        events = get_gamepad()
+        events = get_gamepad()#            text_stim.draw()
+
         for event in events:
             if event.state==1 and event.code in joy_hash:
 #                print(event.ev_type, event.code, event.state)
@@ -166,7 +172,6 @@ def poll_buttons( delay ):
             else:
                 CORRECT[trial_num] = 0
                 wrong_img.draw()
-            text_stim.draw()
             tr_text.draw()
             tr_rect.draw()
             if JOYSTICK:
@@ -185,7 +190,8 @@ def save_logs():
     # Create header array from lists
     head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT)
 
-    # Write header array to csv file
+    # Write header array to csv file#            text_stim.draw()
+
     with open(headerpath + header_nm + '.csv', 'wb') as f:
         writer = csv.writer(f)
         for val in head:
@@ -350,17 +356,6 @@ photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist
                                 size=100)
                                 
     
-text_stim_str = 'Eye Position: %.2f, %.2f. In Region: %s\n'
-
-missing_gpos_str = 'Eye Position: MISSING. In Region: No\n'
-text_stim = visual.TextStim(win, text=text_stim_str,
-                            pos=[0, int((-win.size[1]/2)*0.8)], height=24,
-                                 color='white',
-                                 alignHoriz='center',
-                                 alignVert='center', 
-                                 wrapWidth=win.size[0] * .9)
-
-
 ## Launch experiment                                 
 globalClock = core.Clock()  # to track the time since experiment started
 
@@ -434,23 +429,11 @@ for trial_num in range(TRIAL_COUNT):
             #trial_num = t + block * len(videolist)
             # Update text on screen
             if EYE_TRACKER:
-                text_stim.text = text_stim_str % (gpos[0], gpos[1], gaze_in_region, trial_num)
                 gaze_dot.setPos(gpos)
-            else:
-                text_stim.text = missing_gpos_str
-                            
-        else:
-            # Otherwise just update text stim
-            text_stim.text = missing_gpos_str
-        
-        text_stim.text += "Trial Number: {}\n".format(trial_num)
-        if JOYSTICK:
-            text_stim.text += "Correct: " + ave_str + "%"
-            
+
         # Redraw screen without movie stimuli
         if EYE_TRACKER:
             gaze_ok_region.draw()
-        text_stim.draw()
         tr_text.draw()
         tr_rect.draw()
         if JOYSTICK:
@@ -489,7 +472,6 @@ for trial_num in range(TRIAL_COUNT):
     # Redraw stim
     if EYE_TRACKER:
         gaze_ok_region.draw()
-    text_stim.draw()
     tr_text.draw()
     tr_rect.draw()
     if JOYSTICK:
