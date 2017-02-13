@@ -63,7 +63,7 @@ def instruct_screen( win, start ):
     
     start_pos = np.array([0, -200.0])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
     end_pos = np.array([0, 200.0])
-    animation_duration = 300  # duration in number of frames
+    animation_duration = 100  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
     
     text_str = "dun "*10
@@ -94,10 +94,9 @@ def instruct_screen( win, start ):
             if event.state==1 and event.code==start:
                 # Animate
                 text.contrast = 1
-                for i in np.array(range(100))/100.0:
-                    print(i)
-                    text.contrast = 1-i  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
-                    img.draw()                    
+                for i in np.array(range(100,-100,-4))/100.0:
+                    text.contrast = i
+                    img.draw()
                     text.draw()    
                     win.flip()
                 break
@@ -144,6 +143,11 @@ def poll_buttons( delay ):
     # Draw decision cue in window
     dec_img.draw()
     text_stim.draw()
+    tr_text.draw()
+    tr_rect.draw()
+    if JOYSTICK:
+        prog_bar.draw()
+        corr_bar.draw()
     win.flip()
 
     while time.time()-curr_time < delay:
@@ -163,6 +167,11 @@ def poll_buttons( delay ):
                 CORRECT[trial_num] = 0
                 wrong_img.draw()
             text_stim.draw()
+            tr_text.draw()
+            tr_rect.draw()
+            if JOYSTICK:
+                prog_bar.draw()
+                corr_bar.draw()
             win.flip()
             time.sleep(time_left)
             break
@@ -274,7 +283,6 @@ PHOTO_SIZE = 50
 # Pixels must be integers
 PHOTO_POS = np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1])
 
-
 ## Initialize devices    
 if EYE_TRACKER:
     # Set up eye-tracker configuration dict
@@ -328,9 +336,16 @@ if JOYSTICK:
 # Countdown to start
 readySet( win )
 
-gaze_ok_region = visual.Circle(win, radius=200, units='pix')
-gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
+# Set up eye-tracker visual objects
+if EYE_TRACKER:
+    gaze_ok_region = visual.Circle(win, radius=200, units='pix')
+    gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
                               size=(33, 33), color='green', units='pix')
+# Set up feedback bar
+if JOYSTICK:
+    prog_bar = visual.Rect(win = win, width=75, height=height,
+                pos = [-(width/2),0], fillColor = 'grey', lineColor = 'grey')
+                
 photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist(),
                                 size=100)
                                 
@@ -353,12 +368,19 @@ globalClock = core.Clock()  # to track the time since experiment started
 for trial_num in range(TRIAL_COUNT):
     
     # Get current average percent correct
-    average = str(int(np.mean([x for x in CORRECT if x is not None])*100))   
+    average = int(np.mean([x for x in CORRECT if x is not None])*100)   
+    ave_str = str(average)
     
-    textBox = visual.TextBox(win,text = str(trial_num),font_size = 20,
-                             font_color=[1,1,1],size = (.3,.3),
-                             border_color = [1,1,1,1],pos = (0.15,0.3))
-                             
+    if JOYSTICK:
+        corr_move = height*((average-100)/100.0)
+        corr_bar = visual.Rect(win = win, width=75, height=height,
+                pos = [-(width/2),0+corr_move], fillColor = 'red', lineColor = 'red')
+                                              
+    tr_text = visual.TextStim(win, text=(str(trial_num+1)))
+    tr_rect = visual.Rect(win, width=tr_text.boundingBox[0], height=tr_text.boundingBox[1])
+    tr_text.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]     
+    tr_rect.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]      
+              
     # Create movie stim by loading movie from list
     mov = visual.MovieStim3(win, videolist[trial_num]) 
     
@@ -423,13 +445,18 @@ for trial_num in range(TRIAL_COUNT):
         
         text_stim.text += "Trial Number: {}\n".format(trial_num)
         if JOYSTICK:
-            text_stim.text += "Correct: " + average + "%"
+            text_stim.text += "Correct: " + ave_str + "%"
             
         # Redraw screen without movie stimuli
         if EYE_TRACKER:
             gaze_ok_region.draw()
         text_stim.draw()
-        textBox.draw()
+        tr_text.draw()
+        tr_rect.draw()
+        if JOYSTICK:
+            prog_bar.draw()
+            corr_bar.draw()
+        
         if valid_gaze_pos:
             if EYE_TRACKER:
                 gaze_dot.draw()
@@ -463,6 +490,12 @@ for trial_num in range(TRIAL_COUNT):
     if EYE_TRACKER:
         gaze_ok_region.draw()
     text_stim.draw()
+    tr_text.draw()
+    tr_rect.draw()
+    if JOYSTICK:
+        prog_bar.draw()
+        corr_bar.draw()
+    
     # Display updated stim on screen
     flip_time = win.flip(clearBuffer=True)
     
