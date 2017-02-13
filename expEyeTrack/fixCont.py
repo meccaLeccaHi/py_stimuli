@@ -24,7 +24,7 @@ import numpy as np
 from inputs import get_gamepad
 
 # Start screen function
-def start_screen( win ):
+def start_screen( win, start ):
 
     img = visual.ImageStim(win=win, image="start_screen.png",
                                     units="pix")
@@ -50,28 +50,37 @@ def start_screen( win ):
             break
         
 # Give subject instructions
-def instruct_screen( win ):
+def instruct_screen( win, start ):
     
-    text = visual.TextStim(win, text='Watch me slide!')
-
     # Play music
     filesound = sound.Sound(value = "mission-briefing.wav")
     filesound.setVolume(.2)
     filesound.play()
     
+    start_pos = np.array([0, -200.0])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
+    end_pos = np.array([0, 200.0])
+    animation_duration = 300  # duration in number of frames
+    step_pos = (end_pos - start_pos)/animation_duration
+    
+    text_str = "dun "*100
+    
+    # Set up psychopy stuff
+#    win = visual.Window()
+    text = visual.TextStim(win, text=text_str)
+    img = visual.ImageStim(win=win, image="stars.jpg",
+                                        units="pix")
+#    img.size *= SCALE  # scale the image relative to initial size
+    
     # Animate
-    start_pos = 0
-    stop_pos = 1
-    duration = 6
-
-    # Create text instructions
-    text.pos = [start_pos,start_pos]
-    step_pos = (stop_pos-start_pos)/duration
-    while text.pos[0]<stop_pos:
-        text.pos[0] += step_pos  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
-        text.pos[1] += step_pos        
-        text.draw()
+#    text.width = 60
+    text.pos = start_pos
+    for i in range(animation_duration):
+        text.pos += step_pos  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
+        img.draw()
+        text.draw()    
         win.flip()
+        
+    # Instruct user to press 'Start'
 
     # Wait on 'Start' button press
     while True:
@@ -79,7 +88,7 @@ def instruct_screen( win ):
         for event in events:
             if event.state==1 and event.code==start:
                 break
-        if event.code==start:
+        if event.state==1 and event.code==start:
             filesound.stop()
             break
 
@@ -134,7 +143,6 @@ def save_logs():
         
     # Tell user about saved header
     print "Header file saved: " + header_nm
-
 
 ## Initialize variables
 
@@ -192,7 +200,7 @@ CORRECT = [None] * TRIAL_COUNT
 CORRECT[0] = 0
 
 # Boolean for debugging mode
-TESTING = 1; # 1: yes, 0: no
+TESTING = 0; # 1: yes, 0: no
 
 # Boolean for presence of tracker
 EYE_TRACKER = 0; # 1: yes, 0: no
@@ -265,9 +273,9 @@ win = visual.Window(SCREEN_SIZE.tolist(),
 if JOYSTICK:
     
     # Display start screen and wait for user to press 'Start'
-    start_screen(win)
+    start_screen(win, start)
     # Display instruction screen, then wait for user to press 'Start'
-    instruct_screen( win )
+    instruct_screen(win, start)
     
     dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
     right_img = visual.ImageStim(win=win,image="right.png",units="pix")
