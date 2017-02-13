@@ -35,9 +35,10 @@ def start_screen( win, start ):
     win.flip()
     
     # Play music
-    filesound = sound.Sound(value = "theme.wav")
-    filesound.setVolume(.2)
-    filesound.play() 
+    if MUSIC:
+        filesound = sound.Sound(value = "theme.wav")
+        filesound.setVolume(.1)
+        filesound.play() 
 
     # Wait on 'Start' button press
     while True:
@@ -46,23 +47,26 @@ def start_screen( win, start ):
             if event.state==1 and event.code==start:
                 break
         if event.code==start:
-            filesound.stop()
+            # Stop music
+            if MUSIC:
+                filesound.stop()
             break
         
 # Give subject instructions
 def instruct_screen( win, start ):
     
     # Play music
-    filesound = sound.Sound(value = "mission-briefing.wav")
-    filesound.setVolume(.2)
-    filesound.play()
+    if MUSIC:
+        filesound = sound.Sound(value = "mission-briefing.wav")
+        filesound.setVolume(.1)
+        filesound.play()
     
     start_pos = np.array([0, -200.0])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
     end_pos = np.array([0, 200.0])
     animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
     
-    text_str = "dun "*100
+    text_str = "dun "*10
     
     # Set up psychopy stuff
 #    win = visual.Window()
@@ -84,6 +88,7 @@ def instruct_screen( win, start ):
 
     # Wait on 'Start' button press
     while True:
+           
         events = get_gamepad()
         for event in events:
             if event.state==1 and event.code==start:
@@ -96,22 +101,37 @@ def instruct_screen( win, start ):
                     text.draw()    
                     win.flip()
                 break
-        if event.state==1 and event.code==start:
-            filesound.stop()
+        if (event.state==1 and event.code==start) or (' ' in keyboard.getPresses()):
+            # Stop music
+            if MUSIC:
+                filesound.stop()
             break
         
 def readySet( win ):
     
+    if MUSIC:
+            filesound = sound.Sound(value = "beep.wav")
+            filesound.setVolume(.1)
+            
     for i in range(3,0,-1):
-        text = visual.TextStim(win, text=(str(i)))
-
+        
+        if MUSIC:   
+            filesound.play()
+        
+        # Show count-down        
+        text = visual.TextStim(win, height=48, text=(str(i)))
+    
         # Animate
         text.contrast = 1
-        for i in np.array(range(100))/100.0:
-            print(i)
-            text.contrast = 1-i  # add to existing value. This is shorthand for writing: text_pos = text.pos + step_pos
+        for i in np.array(range(100,-100,-2))/100.0:
+            text.contrast = i 
             text.draw()    
             win.flip()
+        
+    # Show "Go!"
+    text = visual.TextStim(win, height=48, text="Go!")
+    text.draw()    
+    win.flip()
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -231,6 +251,9 @@ SIMULATE = 1; # 1: yes, 0: no
 # Boolean for presence of joystick (N64 only, currently)
 JOYSTICK = 1; # 1: yes, 0: no
 
+# Boolean for intro music
+MUSIC = 1; # 1: yes, 0: no
+
 # Get current screen size (works for single monitor only)
 width = gtk.gdk.screen_width()
 height = gtk.gdk.screen_height()
@@ -332,6 +355,10 @@ for trial_num in range(TRIAL_COUNT):
     # Get current average percent correct
     average = str(int(np.mean([x for x in CORRECT if x is not None])*100))   
     
+    textBox = visual.TextBox(win,text = str(trial_num),font_size = 20,
+                             font_color=[1,1,1],size = (.3,.3),
+                             border_color = [1,1,1,1],pos = (0.15,0.3))
+                             
     # Create movie stim by loading movie from list
     mov = visual.MovieStim3(win, videolist[trial_num]) 
     
@@ -402,6 +429,7 @@ for trial_num in range(TRIAL_COUNT):
         if EYE_TRACKER:
             gaze_ok_region.draw()
         text_stim.draw()
+        textBox.draw()
         if valid_gaze_pos:
             if EYE_TRACKER:
                 gaze_dot.draw()
@@ -414,7 +442,7 @@ for trial_num in range(TRIAL_COUNT):
 
         # Check any new keyboard char events for a space key
         # If one is found, set the trial end variable
-        if ' ' in keyboard.getPresses():
+        if ' ' in keys:
             mov.status = visual.FINISHED
             
         # Check any new keyboard char events for a 'q' key
