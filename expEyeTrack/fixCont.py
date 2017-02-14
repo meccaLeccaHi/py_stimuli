@@ -106,10 +106,24 @@ def instruct_screen( win, start ):
     if RECORD:
         # store an image of every upcoming screen refresh:
         win.getMovieFrame(buffer='back')
-        
+    
+    cont_step = -.1
+    cont_out = 1.0  
+    
     # Wait on 'Start' button press
     while True:
-           
+        
+        # Oscillate text contrast while we wait
+        cont_out = cont_out + cont_step
+        if (cont_out<-.9) or (cont_out>.9):
+            cont_step *= -1
+        fin_text.contrast = cont_out
+
+        img.draw()
+        text.draw()
+        fin_text.draw()
+        win.flip()
+        
         events = get_gamepad()
         for event in events:
             if event.state==1 and event.code==start:
@@ -300,7 +314,7 @@ break_exp = False
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
 videolist = glob.glob(videopath + '*.avi')
-videolist = videolist[0:5]
+#videolist = videolist[0:5]
 
 # Set header path and file name (according to current time)
 headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
