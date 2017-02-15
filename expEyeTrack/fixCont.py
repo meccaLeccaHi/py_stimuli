@@ -69,7 +69,7 @@ def instruct_screen( win, start ):
     animation_duration = 100  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
     
-    text_str = "dun "*10
+    text_str = user_name + ",\n" + "dun "*10
     
     # Set up psychopy stuff
 #    win = visual.Window()
@@ -79,7 +79,6 @@ def instruct_screen( win, start ):
                                height = 50,
                                wrapWidth = width,
                                antialias=False,
-                               bold=True,
                                italic=True,
                                alignHoriz='center')
                                
@@ -178,6 +177,7 @@ def readySet( win ):
     if RECORD:
         # store an image of every upcoming screen refresh:
         win.getMovieFrame(buffer='back')
+    time.sleep(.25)
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -245,7 +245,7 @@ def save_logs():
     # Tell user about saved header
     print "Header file saved: " + header_nm
     
-# Give subject instructions
+# Give subject feedback at end of each trial
 def end_screen( win, start ):
     
     break_endscr = False
@@ -256,31 +256,71 @@ def end_screen( win, start ):
         filesound.setVolume(.1)
         filesound.play()
     
-    text_str = "Your final score was: {}% correct\n\n Play again?".format(ave_str)
+    text_str = user_name + "'s final score:"
+    corr_str = "{}% correct".format(ave_str)
+    
+    # \n\n Play again?
     
     # Set up psychopy stuff
 #    win = visual.Window()
-    text = visual.TextStim(win, text=text_str, height=50, alignHoriz='center')                          
+    text = visual.TextStim(win, text=text_str,
+                           height=50,
+                           alignHoriz='center',
+                           wrapWidth = width,
+                           pos = [0, height/4])
+    score_text = visual.TextStim(win, text=corr_str,
+                           height=65,
+                           alignHoriz='center',
+                           bold=True,
+                           wrapWidth = width)
+    fin_text = visual.TextStim(win, text="Play again? <Press Start>",
+                               height=50,
+                               alignHoriz='center',
+                               italic=True,
+                               wrapWidth = width,
+                               pos = [0, -height/4])                          
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
             
     # Instruct user to press 'Start'
     img.draw()
+    score_text.draw()
     text.draw()    
     win.flip()
     if RECORD:
         # store an image of every upcoming screen refresh:
         win.getMovieFrame(buffer='back')
         
+    cont_step = -.1
+    cont_out = 1.0 
+        
     # Wait on 'Start' button press
     while break_endscr==False:
-                
+        
+        # Oscillate text contrast while we wait
+        cont_out = cont_out + cont_step
+        if (cont_out<-.9) or (cont_out>.9):
+            cont_step *= -1
+        fin_text.contrast = cont_out
+
+        img.draw()
+        text.draw()
+        score_text.draw()
+        fin_text.draw()
+        win.flip()
+        
         # Check keyboard for button presses
         keys = keyboard.getPresses()
         # Check joystick for button presses    
         events = get_gamepad()
         for event in events:
             if (event.state==1 and event.code==start) or (' ' in keys):
+                # Acknowledge button press with sound
+                if MUSIC:
+                    filesound = sound.Sound(value = "yes.wav")
+                    filesound.setVolume(.5)
+                    filesound.play()
+                    
                 # Animate
                 text.contrast = 1
                 for i in np.array(range(100,-100,-4))/100.0:
@@ -295,6 +335,7 @@ def end_screen( win, start ):
                     filesound.stop()
                 break_exp = False
                 break_endscr = True
+                
                 break
             elif ('q' in keys):
                 # Stop music
@@ -378,6 +419,9 @@ else:
 PHOTO_SIZE = 50
 # Pixels must be integers
 PHOTO_POS = np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1])
+
+# Prompt for player name
+user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
 
 ## Create window
 win = visual.Window(SCREEN_SIZE.tolist(),
