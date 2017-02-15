@@ -252,8 +252,8 @@ def end_screen( win, start ):
     
     # Play music
     if MUSIC:
-        filesound = sound.Sound(value = "stage_clear.wav")
-        filesound.setVolume(.1)
+        filesound = sound.Sound(value = "tyson.wav")
+        filesound.setVolume(.4)
         filesound.play()
     
     text_str = user_name + "'s final score:"
@@ -317,6 +317,7 @@ def end_screen( win, start ):
             if (event.state==1 and event.code==start) or (' ' in keys):
                 # Acknowledge button press with sound
                 if MUSIC:
+                    filesound.stop()
                     filesound = sound.Sound(value = "yes.wav")
                     filesound.setVolume(.5)
                     filesound.play()
@@ -331,8 +332,7 @@ def end_screen( win, start ):
                     if RECORD:
                         # store an image of every upcoming screen refresh:
                         win.getMovieFrame(buffer='back')
-                if MUSIC:
-                    filesound.stop()
+                    
                 break_exp = False
                 break_endscr = True
                 
