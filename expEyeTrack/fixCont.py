@@ -63,17 +63,16 @@ def instruct_screen( win, start ):
         filesound = sound.Sound(value = "mission-briefing.wav")
         filesound.setVolume(.1)
         filesound.play()
+        
+    instr_img = visual.ImageStim(win=win, image="instructions.png",
+                                    units="pix")
+    #    img.size *= SCALE  # scale the image relative to initial size
     
-    start_pos = np.array([0, -200.0])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
-    end_pos = np.array([0, 200.0])
-    animation_duration = 100  # duration in number of frames
+    start_pos = np.array([0, -height/3])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
+    end_pos = np.array([0, 0.0])
+    animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
-    
-    text_str = user_name + ",\n" + "dun "*10
-    
-    # Set up psychopy stuff
-#    win = visual.Window()
-    text = visual.TextStim(win, text=text_str, height = 50, antialias=True)
+                           
     fin_text = visual.TextStim(win, text="Press <Start> to proceed",
                                pos = [0, -(height/2)+50],
                                height = 50,
@@ -86,20 +85,21 @@ def instruct_screen( win, start ):
 #    img.size *= SCALE  # scale the image relative to initial size
     
     # Animate
-#    text.width = 60
-    text.pos = start_pos
+    instr_img.pos = start_pos
     for i in range(animation_duration):
-        text.pos += step_pos  # add to existing value
+        instr_img.pos += step_pos  # Add to existing value
+        # Draw images to window and show on screen
         img.draw()
-        text.draw()    
+        instr_img.draw()
         win.flip()
         if RECORD:
-            # store an image of every upcoming screen refresh:
+            # Store image of upcoming screen refresh
             win.getMovieFrame(buffer='back')
         
     # Instruct user to press 'Start'
     img.draw()
-    text.draw()
+    instr_img.draw()
+    #        text.draw() 
     fin_text.draw()    
     win.flip()
     if RECORD:
@@ -119,7 +119,8 @@ def instruct_screen( win, start ):
         fin_text.contrast = cont_out
 
         img.draw()
-        text.draw()
+        instr_img.draw()
+#        text.draw() 
         fin_text.draw()
         win.flip()
         
@@ -127,12 +128,11 @@ def instruct_screen( win, start ):
         for event in events:
             if event.state==1 and event.code==start:
                 # Animate
-                text.contrast = 1
                 for i in np.array(range(100,-100,-4))/100.0:
-                    text.contrast = i
                     fin_text.contrast = i
                     img.draw()
-                    text.draw()
+                    instr_img.draw()
+#                    text.draw() 
                     fin_text.draw()
                     win.flip()
                     if RECORD:
@@ -158,7 +158,7 @@ def readySet( win ):
             filesound.play()
         
         # Show count-down        
-        text = visual.TextStim(win, height=48, text=(str(i)))
+        text = visual.TextStim(win, height=48, text=str(i))
     
         # Animate
         text.contrast = 1
@@ -178,6 +178,37 @@ def readySet( win ):
         # store an image of every upcoming screen refresh:
         win.getMovieFrame(buffer='back')
     time.sleep(.25)
+    
+def segue( win ):
+    
+    if MUSIC:
+            filesound = sound.Sound(value = "morse.wav")
+            filesound.setVolume(.1)
+            filesound.play()
+            
+    # Load background image
+    img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
+
+    # Show message        
+    text_str = "Incoming transmissions for {}...".format(user_name)
+    text = visual.TextStim(win, height = 30,
+                               wrapWidth = width,
+                               antialias=True,
+                               alignHoriz='center',
+                               text=text_str)
+
+    # Animate
+    text.contrast = 1
+    for i in np.array(range(100,-100,-2))/100.0:
+        text.contrast = i
+        img.draw()
+        text.draw()    
+        win.flip()
+        if RECORD:
+            # store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
+    
+    time.sleep(.4)
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -479,6 +510,15 @@ while break_exp==False:
     ident_ind = videolist[0].find("identity")+len("identity")
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
     
+    # Correct identity # for faces more than 50% along tang. trajectory
+    TRAJ_LIST = np.unique([x[ident_ind+1:ident_ind+4] for x in videolist],return_inverse = True)[1]
+    STEP_LIST = np.unique([x[ident_ind+5:ident_ind+8] for x in videolist],return_inverse = True)[1]
+    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))]
+    temp2 = temp1.copy()
+    temp2[temp1<max(temp1)] += 1
+    temp2[temp1==max(temp1)] = 0
+    IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))] = temp2
+    
     # Create jitter times (uniformly distributed)
     jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
     
@@ -498,6 +538,8 @@ while break_exp==False:
         
         # Display start screen and wait for user to press 'Start'
         start_screen(win, start)
+        # Display 'incoming transmission' segue
+        segue( win )
         # Display instruction screen, then wait for user to press 'Start'
         instruct_screen(win, start)
         
