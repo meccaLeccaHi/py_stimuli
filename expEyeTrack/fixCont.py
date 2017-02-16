@@ -1,5 +1,6 @@
 '''
-Simple iohub eye tracker movie player. Presentation of movies is contingent on
+Iohub eye-tracking/joystick-compatible movie player. 
+Presentation of movies can be contingent on
 central fixation.
 No iohub config .yaml files are used.
 Setup for an EyeLink(C) 1000 Desktop System. 
@@ -10,6 +11,7 @@ future versions should read compressed movies-
     video: H.264 compressed,
     audio: Linear PCM
 '''
+
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
@@ -147,7 +149,7 @@ def instruct_screen( win, start ):
         
 def readySet( win ):
     
-    if MUSIC:#            text_stim.draw()
+    if MUSIC:
 
             filesound = sound.Sound(value = "beep.wav")
             filesound.setVolume(.1)
