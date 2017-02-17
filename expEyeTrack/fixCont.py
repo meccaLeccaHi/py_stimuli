@@ -12,6 +12,8 @@ future versions should read compressed movies-
     audio: Linear PCM
 '''
 
+#from constants import DISPSIZE
+
 from psychopy import core, visual
 from psychopy.iohub.client import launchHubServer
 
@@ -20,13 +22,12 @@ from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
 from psychopy import sound
 
-import glob, time, csv, datetime, gtk
+import glob, time, csv, datetime, gtk, subprocess, os, xbox
 import numpy as np
-#import struct
-from inputs import get_gamepad
+#from inputs import get_gamepad
 
 # Start screen function
-def start_screen( win, start ):
+def start_screen( win ):
 
     img = visual.ImageStim(win=win, image="start_screen.png",
                                     units="pix")
@@ -47,18 +48,14 @@ def start_screen( win, start ):
 
     # Wait on 'Start' button press
     while True:
-        events = get_gamepad()
-        for event in events:
-            if event.state==1 and event.code==start:
-                break
-        if event.code==start:
+        if joy.Start():
             # Stop music
             if MUSIC:
                 filesound.stop()
             break
         
 # Give subject instructions
-def instruct_screen( win, start ):
+def instruct_screen( win ):
     
     # Play music
     if MUSIC:
@@ -122,26 +119,21 @@ def instruct_screen( win, start ):
 
         img.draw()
         instr_img.draw()
-#        text.draw() 
         fin_text.draw()
         win.flip()
         
-        events = get_gamepad()
-        for event in events:
-            if event.state==1 and event.code==start:
-                # Animate
-                for i in np.array(range(100,-100,-4))/100.0:
-                    fin_text.contrast = i
-                    img.draw()
-                    instr_img.draw()
-#                    text.draw() 
-                    fin_text.draw()
-                    win.flip()
-                    if RECORD:
-                        # store an image of every upcoming screen refresh:
-                        win.getMovieFrame(buffer='back')
-                break
-        if (event.state==1 and event.code==start) or (' ' in keyboard.getPresses()):
+        if joy.Start() or (' ' in keyboard.getPresses()):
+            # Fade out text            
+            for i in np.array(range(100,-100,-4))/100.0:
+                fin_text.contrast = i
+                img.draw()
+                instr_img.draw()
+                fin_text.draw()
+                win.flip()
+                if RECORD:
+                    # store an image of every upcoming screen refresh:
+                    win.getMovieFrame(buffer='back')
+
             # Stop music
             if MUSIC:
                 filesound.stop()
@@ -224,43 +216,45 @@ def poll_buttons( delay ):
     dec_img.draw()
     tr_text.draw()
     tr_rect.draw()
-    if JOYSTICK:
-        prog_bar.draw()
-        corr_bar.draw()
+    prog_bar.draw()
+    corr_bar.draw()
     win.flip()
     if RECORD:
         # store an image of every upcoming screen refresh:
         win.getMovieFrame(buffer='back')
 
     while time.time()-curr_time < delay:
-        events = get_gamepad()
-
-        for event in events:
-            if event.state==1 and event.code in joy_hash:
-#                print(event.ev_type, event.code, event.state)
-                resp = joy_hash[event.code]
-                resp_time = time.time()-curr_time
-                time_left = delay - resp_time
-                break
+        if joy.dpadUp():
+            resp = 0
+        elif joy.dpadRight():
+            resp = 1
+        elif joy.dpadDown():
+            resp = 2
+        elif joy.dpadLeft():
+            resp = 3
+            
         if resp!= None:
+            resp_time = time.time()-curr_time
+            time_left = delay - resp_time
+            
             if resp==IDENT_LIST[trial_num]:
                 CORRECT[trial_num] = 1
                 right_img.draw()
             else:
                 CORRECT[trial_num] = 0
                 wrong_img.draw()
+                
             tr_text.draw()
             tr_rect.draw()
-            if JOYSTICK:
-                prog_bar.draw()
-                corr_bar.draw()
+            prog_bar.draw()
+            corr_bar.draw()
             win.flip()
             if RECORD:
                 # store an image of every upcoming screen refresh:
                 win.getMovieFrame(buffer='back')
+                
             time.sleep(time_left)
             break
-        del events
     
     return resp, resp_time
 
@@ -279,7 +273,7 @@ def save_logs():
     print "Header file saved: " + header_nm
     
 # Give subject feedback at end of each trial
-def end_screen( win, start ):
+def end_screen( win ):
     
     break_endscr = False
     
@@ -292,10 +286,7 @@ def end_screen( win, start ):
     text_str = user_name + "'s final score:"
     corr_str = "{}% correct".format(ave_str)
     
-    # \n\n Play again?
-    
     # Set up psychopy stuff
-#    win = visual.Window()
     text = visual.TextStim(win, text=text_str,
                            height=50,
                            alignHoriz='center',
@@ -307,11 +298,11 @@ def end_screen( win, start ):
                            bold=True,
                            wrapWidth = width)
     fin_text = visual.TextStim(win, text="Play again? <Press Start>",
-                               height=50,
-                               alignHoriz='center',
-                               italic=True,
-                               wrapWidth = width,
-                               pos = [0, -height/4])                          
+                           height=50,
+                           alignHoriz='center',
+                           italic=True,
+                           wrapWidth = width,
+                           pos = [0, -height/4])                          
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
             
@@ -342,42 +333,41 @@ def end_screen( win, start ):
         fin_text.draw()
         win.flip()
         
-        # Check keyboard for button presses
+        # Check devices for button presses
         keys = keyboard.getPresses()
-        # Check joystick for button presses    
-        events = get_gamepad()
-        for event in events:
-            if (event.state==1 and event.code==start) or (' ' in keys):
-                # Acknowledge button press with sound
-                if MUSIC:
-                    filesound.stop()
-                    filesound = sound.Sound(value = "yes.wav")
-                    filesound.setVolume(.5)
-                    filesound.play()
-                    
-                # Animate
-                text.contrast = 1
-                for i in np.array(range(100,-100,-4))/100.0:
-                    text.contrast = i
-                    img.draw()
-                    text.draw()
-                    win.flip()
-                    if RECORD:
-                        # store an image of every upcoming screen refresh:
-                        win.getMovieFrame(buffer='back')
-                    
-                break_exp = False
-                break_endscr = True
+        if joy.Start() or (' ' in keys):       
+            # Acknowledge button press with sound
+            if MUSIC:
+                filesound.stop()
+                filesound = sound.Sound(value = "yes.wav")
+                filesound.setVolume(.5)
+                filesound.play()
                 
-                break
-            elif ('q' in keys):
-                # Stop music
-                if MUSIC:
-                    filesound.stop()
-                break_exp = True
-                break_endscr = True
-                break
+            # Animate
+            text.contrast = 1
+            for i in np.array(range(100,-100,-4))/100.0:
+                text.contrast = i
+                img.draw()
+                text.draw()
+                win.flip()
+                if RECORD:
+                    # store an image of every upcoming screen refresh:
+                    win.getMovieFrame(buffer='back')
+                
+            break_exp = False
+            break_endscr = True
+            
+            break
+        elif ('q' in keys):
+            # Stop music
+            if MUSIC:
+                filesound.stop()
+            break_exp = True
+            break_endscr = True
+            break
     return break_exp
+
+
 
 ## Start script
 # Initialize boolean to break and end experiment
@@ -392,7 +382,7 @@ videolist = glob.glob(videopath + '*.avi')
 
 # Set header path and file name (according to current time)
 headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
-    
+
  # Get current screen size (works for single monitor only)
 width = gtk.gdk.screen_width()
 height = gtk.gdk.screen_height()
@@ -421,14 +411,9 @@ JOYSTICK = 1; # 1: yes, 0: no
 # Boolean for intro music
 MUSIC = 1; # 1: yes, 0: no
 
-# Create hash table for joystick inputs
-joy_hash = {}
-joy_hash['BTN_TRIGGER'] = 0
-joy_hash['BTN_THUMB'] = 1
-joy_hash['BTN_THUMB2'] = 2
-joy_hash['BTN_TOP'] = 3
+if JOYSTICK:
 
-start = 'BTN_BASE4'
+    joy = xbox.Joystick()
     
 # Include/remove noise controls
 if CONTROLS==0:
@@ -487,7 +472,7 @@ else:
 
 # Get devices for future access
 keyboard = io.devices.keyboard
-display = io.devices.display
+#display = io.devices.display
     
 if EYE_TRACKER:
     # Run eyetracker calibration
@@ -539,11 +524,11 @@ while break_exp==False:
     if JOYSTICK:
         
         # Display start screen and wait for user to press 'Start'
-        start_screen(win, start)
+        start_screen(win)
         # Display 'incoming transmission' segue
-        segue( win )
+        segue(win)
         # Display instruction screen, then wait for user to press 'Start'
-        instruct_screen(win, start)
+        instruct_screen(win)
         
         dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
         right_img = visual.ImageStim(win=win,image="right.png",units="pix")
@@ -584,7 +569,7 @@ while break_exp==False:
         tr_text = visual.TextStim(win, text=(str(trial_num+1)))
         tr_rect = visual.Rect(win, width=tr_text.boundingBox[0], height=tr_text.boundingBox[1])
         tr_text.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]     
-        tr_rect.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]      
+        tr_rect.pos = tr_text.pos      
                   
         # Create movie stim by loading movie from list
         mov = visual.MovieStim3(win, videolist[trial_num]) 
@@ -716,15 +701,16 @@ while break_exp==False:
     save_logs()
     
     # All Trials are done
-    break_exp = end_screen( win, start )
+    break_exp = end_screen( win )
     
     if RECORD:
         # Combine movie frames in a  movie file
         win.saveMovieFrames(fileName='mov_file.mp4')
-    
+
+## End experiment    
 if EYE_TRACKER:
     tracker.setConnectionState(False)
-       
-## End experiment
+if JOYSTICK:
+    joy.close()
 io.quit()
 core.quit()
