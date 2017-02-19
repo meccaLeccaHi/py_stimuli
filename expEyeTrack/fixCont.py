@@ -22,9 +22,10 @@ from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
 from psychopy import sound
 
-import glob, time, csv, datetime, gtk, subprocess, os, xbox
+import glob, time, csv, datetime, gtk, xbox # , subprocess, os
 import numpy as np
-#from inputs import get_gamepad
+
+from buttonDemo import buttonDemo
 
 # Start screen function
 def start_screen( win ):
@@ -261,7 +262,7 @@ def poll_buttons( delay ):
 # Save log file function    
 def save_logs():
     # Create header array from lists
-    head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT)
+    head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT,TRAJ_LIST,STEP_LIST)
 
     # Write header array to csv file
     with open(headerpath + header_nm + '.csv', 'wb') as f:
@@ -283,7 +284,7 @@ def end_screen( win ):
         filesound.setVolume(.4)
         filesound.play()
     
-    text_str = user_name + "'s final score:"
+    text_str = user_name + "'s score:"
     corr_str = "{}% correct".format(ave_str)
     
     # Set up psychopy stuff
@@ -492,7 +493,7 @@ while break_exp==False:
         
     # Re-order (and grow, if necessary) stimulus list
     videolist = [ videolist[i] for i in new_order ]
-    break_block = False
+
     # Extract identity numbers from video list
     ident_ind = videolist[0].find("identity")+len("identity")
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
@@ -529,6 +530,10 @@ while break_exp==False:
         segue(win)
         # Display instruction screen, then wait for user to press 'Start'
         instruct_screen(win)
+        # Display demonstration of identities and corresponding dpad directions
+            # Initialize devices for future access
+     
+        buttonDemo(win, joy, keyboard)
         
         dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
         right_img = visual.ImageStim(win=win,image="right.png",units="pix")
@@ -690,9 +695,15 @@ while break_exp==False:
         if JOYSTICK:
             # Poll joystick for n seconds
             RESP[trial_num], RESP_TIME[trial_num] = poll_buttons(delay)
-        else:
-            # Pause for n seconds
-            time.sleep(delay)
+        
+        # Pause for n seconds
+        tr_text.draw()
+        tr_rect.draw()
+        if JOYSTICK:
+            prog_bar.draw()
+            corr_bar.draw()
+        win.flip(clearBuffer=True)
+        time.sleep(delay)
             
         # Log ISI end time for header
         ISI_END[trial_num] = core.getTime()
