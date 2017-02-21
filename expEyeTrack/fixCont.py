@@ -26,6 +26,7 @@ import glob, time, csv, datetime, gtk, xbox # , subprocess, os
 import numpy as np
 
 from buttonDemo import buttonDemo
+from plot_beh import plot_beh
 
 # Start screen function
 def start_screen( win ):
@@ -69,7 +70,7 @@ def instruct_screen( win ):
     #    img.size *= SCALE  # scale the image relative to initial size
     
     start_pos = np.array([0, -height/3])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
-    end_pos = np.array([0, 0.0])
+    end_pos = np.array([0, -height/20.0])
     animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
                            
@@ -274,7 +275,7 @@ def save_logs():
     print "Header file saved: " + header_nm
     
 # Give subject feedback at end of each trial
-def end_screen( win ):
+def end_screen( win, beh_fig_name ):
     
     break_endscr = False
     
@@ -285,36 +286,46 @@ def end_screen( win ):
         filesound.play()
     
     text_str = user_name + "'s score:"
-    corr_str = "{}% correct".format(ave_str)
+    corr_str = "{}%".format(ave_str)
     
     # Set up psychopy stuff
     text = visual.TextStim(win, text=text_str,
                            height=50,
                            alignHoriz='center',
                            wrapWidth = width,
-                           pos = [0, height/4])
+                           pos = [0, height/3])
     score_text = visual.TextStim(win, text=corr_str,
-                           height=65,
+                           height=70,
+                           color=barCol,
                            alignHoriz='center',
                            bold=True,
-                           wrapWidth = width)
+                           wrapWidth = width,
+                           pos = [width/6, 0])
     fin_text = visual.TextStim(win, text="Play again? <Press Start>",
                            height=50,
                            alignHoriz='center',
                            italic=True,
                            wrapWidth = width,
-                           pos = [0, -height/4])                          
+                           pos = [0, -height/2.5])                          
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
-            
+    
+    beh_img = visual.ImageStim(win=win,
+                               image = beh_fig_name,
+                               units = "pix",
+                               pos = [-width/6, 0])
+#    beh_img.size *= .75  # scale the image relative to initial size
+
+        
     # Instruct user to press 'Start'
-    img.draw()
-    score_text.draw()
-    text.draw()    
-    win.flip()
-    if RECORD:
-        # store an image of every upcoming screen refresh:
-        win.getMovieFrame(buffer='back')
+#    img.draw()
+#    beh_img.draw()
+#    score_text.draw()
+#    text.draw()    
+#    win.flip()
+#    if RECORD:
+#        # store an image of every upcoming screen refresh:
+#        win.getMovieFrame(buffer='back')
         
     cont_step = -.1
     cont_out = 1.0 
@@ -329,10 +340,14 @@ def end_screen( win ):
         fin_text.contrast = cont_out
 
         img.draw()
+        beh_img.draw()
         text.draw()
         score_text.draw()
         fin_text.draw()
         win.flip()
+        if RECORD:
+        # store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
         
         # Check devices for button presses
         keys = keyboard.getPresses()
@@ -348,7 +363,9 @@ def end_screen( win ):
             text.contrast = 1
             for i in np.array(range(100,-100,-4))/100.0:
                 text.contrast = i
+                beh_img.contrast = i                
                 img.draw()
+                beh_img.draw()
                 text.draw()
                 win.flip()
                 if RECORD:
@@ -359,7 +376,7 @@ def end_screen( win ):
             break_endscr = True
             
             break
-        elif ('q' in keys):
+        elif joy.Back() or ('q' in keys):
             # Stop music
             if MUSIC:
                 filesound.stop()
@@ -375,13 +392,16 @@ def end_screen( win ):
 break_exp = False
 
 ## Initialize variables
+
+# Define path for figure output
+fig_dir = "/home/adam/Desktop/py_stimuli/expEyeTrack/beh_figs/"
     
 # Find movies matching wildcard search
 videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
 videolist = glob.glob(videopath + '*.avi')
 #videolist = videolist[0:5]
 
-# Set header path and file name (according to current time)
+# Set header path
 headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
 
  # Get current screen size (works for single monitor only)
@@ -427,7 +447,7 @@ TRIAL_COUNT = len(videolist) * BLOCK_REPS
 if TESTING:
     FLSCRN = False
     # Scale screen for testing
-    SCREEN_SIZE = np.array([(x/3) for x in (width, height)])
+    SCREEN_SIZE = np.array([(x/1.5) for x in (width, height)])
     # We're referencing pixels, so must be in integer values
     SCREEN_SIZE = np.floor(SCREEN_SIZE)
 else:
@@ -568,8 +588,14 @@ while break_exp==False:
         
         if JOYSTICK:
             corr_move = height*((average-100)/100.0)
-            corr_bar = visual.Rect(win = win, width=75, height=height,
-                    pos = [-(width/2),0+corr_move], fillColor = 'red', lineColor = 'red')
+            if average<=25:
+                barCol = 'red'
+            elif average<=50:
+                barCol='yellow'
+            else:
+                barCol='green'
+            corr_bar = visual.Rect(win=win, width=75, height=height,
+                    pos=[-(width/2),0+corr_move], fillColor=barCol, lineColor=barCol)
                                                   
         tr_text = visual.TextStim(win, text=(str(trial_num+1)))
         tr_rect = visual.Rect(win, width=tr_text.boundingBox[0], height=tr_text.boundingBox[1])
@@ -657,7 +683,7 @@ while break_exp==False:
                 
             # Check any new keyboard char events for a 'q' key
             # If one is found, set the experiment break boolean
-            if 'q' in keys:
+            if joy.Back() or ('q' in keys):
                 break_exp = True
                 break_block = True
                 break
@@ -711,14 +737,29 @@ while break_exp==False:
     ## Save log files    
     save_logs()
     
+#    win.close()
+#    ## Save psychometric figs
+    plt = plot_beh(STEP_LIST,TRAJ_LIST,CORRECT,rad_only=True,SCORE=average)
+    figOut_name = fig_dir + "beh_fig_" + header_nm + ".png"    
+    plt.savefig(filename=figOut_name,
+                dpi=100, transparent=True)
+    plt.close()
+#    fig, plt = plot_beh(STEP_LIST, TRAJ_LIST, CORRECT)
+#    ;
+#    plt.savefig(filename=(figOut_name),
+#               facecolor='k',transparent=True)
+#    plt.close()
+    
     # All Trials are done
-    break_exp = end_screen( win )
+    break_exp = end_screen( win, figOut_name )
     
     if RECORD:
         # Combine movie frames in a  movie file
         win.saveMovieFrames(fileName='mov_file.mp4')
+    
 
-## End experiment    
+## End experiment   
+win.close() 
 if EYE_TRACKER:
     tracker.setConnectionState(False)
 if JOYSTICK:
