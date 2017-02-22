@@ -48,6 +48,10 @@ def buttonDemo( win, joystick, keyboard ):
                                         units="pix")
     img.size *= 1.25  # scale the image relative to initial size
     
+    warn_img = visual.ImageStim(win=win, image="training_area.png",
+                                        units="pix")
+    warn_img.size *= .5  # scale the image relative to initial size
+                                       
     instr_text = visual.TextStim(win, text="Identify each with these buttons:",
                                height=30,
                                alignHoriz='center',
@@ -64,8 +68,18 @@ def buttonDemo( win, joystick, keyboard ):
     
     img_pos_list = np.array([[0,height/10],[height/10,0],[0,-height/10],[-height/10,0]])
     movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
-                         
-    # Show count-down        
+                     
+    # Show warning and animate fade
+    warn_img.contrast = 1
+    for i in np.array(range(100,-100,-1))/100.0:
+#        warn_img.contrast = i 
+        warn_img.draw()    
+        win.flip()
+        if RECORD:
+            # store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
+                
+    # Show instructions        
     text = visual.TextStim(win,height=48,
                                text="Remember these people...",
                                alignHoriz='center')
@@ -79,6 +93,7 @@ def buttonDemo( win, joystick, keyboard ):
         if RECORD:
             # store an image of every upcoming screen refresh:
             win.getMovieFrame(buffer='back')
+            
             
     for i in range(len(videolist)):
         
