@@ -316,16 +316,7 @@ def end_screen( win, beh_fig_name ):
                                pos = [-width/6, 0])
 #    beh_img.size *= .75  # scale the image relative to initial size
 
-        
     # Instruct user to press 'Start'
-#    img.draw()
-#    beh_img.draw()
-#    score_text.draw()
-#    text.draw()    
-#    win.flip()
-#    if RECORD:
-#        # store an image of every upcoming screen refresh:
-#        win.getMovieFrame(buffer='back')
         
     cont_step = -.1
     cont_out = 1.0 
