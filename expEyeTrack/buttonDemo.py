@@ -26,31 +26,37 @@ def buttonDemo( win, joystick, keyboard ):
      # Get current screen size (works for single monitor only)
     width = gtk.gdk.screen_width()
     height = gtk.gdk.screen_height()
+
+    # Choose which button image to show    
+    #button_image = "buttonIcon_N64.png"
+    button_image = "xbox_dpad.png"
     
-    TESTING = 0
+    cmd_list = [lambda:joy.dpadUp(),
+                lambda:joy.dpadRight(),
+                lambda:joy.dpadDown(),
+                lambda:joy.dpadLeft()]  
+    
+#    cmd_list = [lambda:joy.Y(),
+#                lambda:joy.B(),
+#                lambda:joy.A(),
+#                lambda:joy.X()]  
+
+#    cmd_list = [lambda: a(x,y), lambda: b(),...]  
+#    for cmd in cmd_list:  
+#        if cmd():  
+#            break  
     
     RECORD = 0
     
     vid_play = True
-    
-    # Set screen parameters
-    if TESTING:
-        FLSCRN = False
-        # Scale screen for testing
-        SCREEN_SIZE = np.array([(x/1.5) for x in (width, height)])
-        # We're referencing pixels, so must be in integer values
-        SCREEN_SIZE = np.floor(SCREEN_SIZE)
-    else:
-        FLSCRN = True
-        SCREEN_SIZE = np.array([width, height])
-                        
-    img = visual.ImageStim(win=win, image="buttonIcon_N64.png",
+                          
+    img = visual.ImageStim(win=win, image=button_image,
                                         units="pix")
-    img.size *= 1.25  # scale the image relative to initial size
+    img.size *= .5  # scale the image relative to initial size
     
-    warn_img = visual.ImageStim(win=win, image="training_area.png",
+    warn_img = visual.ImageStim(win=win, image="training_mode.png",
                                         units="pix")
-    warn_img.size *= .5  # scale the image relative to initial size
+    warn_img.size *= .75  # scale the image relative to initial size
                                        
     instr_text = visual.TextStim(win, text="Identify each with these buttons:",
                                height=30,
@@ -143,6 +149,10 @@ def buttonDemo( win, joystick, keyboard ):
                     vid_play = False
                     break
                 
+        # Cue button press
+                
+        # Wait on button press
+        
         # Iterate image orientation (rotation)
         img.ori += 90.0
         

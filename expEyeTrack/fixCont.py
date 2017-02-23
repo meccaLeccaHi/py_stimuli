@@ -25,6 +25,7 @@ from psychopy import sound
 import glob, time, csv, datetime, gtk, xbox # , subprocess, os
 import numpy as np
 
+# Import custom functions
 from buttonDemo import buttonDemo
 from plot_beh import plot_beh
 
@@ -59,6 +60,8 @@ def start_screen( win ):
 # Give subject instructions
 def instruct_screen( win ):
     
+    instruct_play = True
+    
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "mission-briefing.wav")
@@ -81,7 +84,8 @@ def instruct_screen( win ):
                                antialias=False,
                                italic=True,
                                alignHoriz='center')
-                               
+    
+    # Create background image                           
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
     
@@ -96,22 +100,16 @@ def instruct_screen( win ):
         if RECORD:
             # Store image of upcoming screen refresh
             win.getMovieFrame(buffer='back')
-        
-    # Instruct user to press 'Start'
-    img.draw()
-    instr_img.draw()
-    #        text.draw() 
-    fin_text.draw()    
-    win.flip()
-    if RECORD:
-        # store an image of every upcoming screen refresh:
-        win.getMovieFrame(buffer='back')
+            
+        if joy.Start() or (' ' in keyboard.getPresses()):
+            instruct_play = False
+            break
     
     cont_step = -.1
     cont_out = 1.0  
     
-    # Wait on 'Start' button press
-    while True:
+    # Instruct user to press 'Start' and wait on button press
+    while (instruct_play):
         
         # Oscillate text contrast while we wait
         cont_out = cont_out + cont_step
@@ -123,33 +121,27 @@ def instruct_screen( win ):
         instr_img.draw()
         fin_text.draw()
         win.flip()
+        if RECORD:
+            # store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
         
         if joy.Start() or (' ' in keyboard.getPresses()):
-            # Fade out text            
-            for i in np.array(range(100,-100,-4))/100.0:
-                fin_text.contrast = i
-                img.draw()
-                instr_img.draw()
-                fin_text.draw()
-                win.flip()
-                if RECORD:
-                    # store an image of every upcoming screen refresh:
-                    win.getMovieFrame(buffer='back')
-
-            # Stop music
-            if MUSIC:
-                filesound.stop()
+            instruct_play = False
             break
-        
+
+    # Stop music
+    if MUSIC:
+        filesound.stop()
+                
 def readySet( win ):
     
     if MUSIC:
-
-            filesound = sound.Sound(value = "beep.wav")
+            filesound = sound.Sound(value="beep.wav")
             filesound.setVolume(.1)
             
     for i in range(3,0,-1):
         
+        # Play sound
         if MUSIC:   
             filesound.play()
         
@@ -177,6 +169,7 @@ def readySet( win ):
     
 def segue( win ):
     
+    # Play sound
     if MUSIC:
             filesound = sound.Sound(value = "morse.wav")
             filesound.setVolume(.1)
@@ -214,7 +207,7 @@ def poll_buttons( delay ):
     resp_time = None
     time_left = 0
     
-    # Draw decision cue in window
+    # Draw decision cue in window and post to screen
     dec_img.draw()
     tr_text.draw()
     tr_rect.draw()
@@ -239,13 +232,13 @@ def poll_buttons( delay ):
             resp_time = time.time()-curr_time
             time_left = delay - resp_time
             
+            # Draw everything and post to screen
             if resp==IDENT_LIST[trial_num]:
                 CORRECT[trial_num] = 1
                 right_img.draw()
             else:
                 CORRECT[trial_num] = 0
-                wrong_img.draw()
-                
+                wrong_img.draw()    
             tr_text.draw()
             tr_rect.draw()
             prog_bar.draw()
@@ -330,6 +323,7 @@ def end_screen( win, beh_fig_name ):
             cont_step *= -1
         fin_text.contrast = cont_out
 
+        # Draw everything and post to screen
         img.draw()
         beh_img.draw()
         text.draw()
@@ -544,8 +538,10 @@ while break_exp==False:
         # Display demonstration of identities and corresponding dpad directions
             # Initialize devices for future access
      
+        # Run demo on button-identity mapping
         buttonDemo(win, joy, keyboard)
         
+        # Create relevant image stimuli
         dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
         right_img = visual.ImageStim(win=win,image="right.png",units="pix")
         wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
@@ -562,7 +558,8 @@ while break_exp==False:
     if JOYSTICK:
         prog_bar = visual.Rect(win = win, width=75, height=height,
                     pos = [-(width/2),0], fillColor = 'grey', lineColor = 'grey')
-                    
+     
+    # Create photodiode patch               
     photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist(),
                                     size=100)
                                     
@@ -578,6 +575,7 @@ while break_exp==False:
         ave_str = str(average)
         
         if JOYSTICK:
+            # Set color of '% correct bar'
             corr_move = height*((average-100)/100.0)
             if average<=25:
                 barCol = 'red'
@@ -585,6 +583,7 @@ while break_exp==False:
                 barCol='yellow'
             else:
                 barCol='green'
+            # Create '% correct bar'
             corr_bar = visual.Rect(win=win, width=75, height=height,
                     pos=[-(width/2),0+corr_move], fillColor=barCol, lineColor=barCol)
                                                   
@@ -735,11 +734,6 @@ while break_exp==False:
     plt.savefig(filename=figOut_name,
                 dpi=100, transparent=True)
     plt.close()
-#    fig, plt = plot_beh(STEP_LIST, TRAJ_LIST, CORRECT)
-#    ;
-#    plt.savefig(filename=(figOut_name),
-#               facecolor='k',transparent=True)
-#    plt.close()
     
     # All Trials are done
     break_exp = end_screen( win, figOut_name )
