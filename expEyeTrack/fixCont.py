@@ -142,6 +142,16 @@ def readySet( win ):
             filesound = sound.Sound(value="beep.wav")
             filesound.setVolume(.1)
             
+    # Show "Mission starting in:"
+    text = visual.TextStim(win, height=48, text="Mission starting in:")
+    for i in np.array(range(100,-100,-2))/100.0:
+        text.contrast = i 
+        text.draw()    
+        win.flip()
+        if RECORD:
+            # Store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
+        
     for i in range(3,0,-1):
         
         # Play sound
@@ -152,7 +162,6 @@ def readySet( win ):
         text = visual.TextStim(win, height=48, text=str(i))
     
         # Animate
-        text.contrast = 1
         for i in np.array(range(100,-100,-2))/100.0:
             text.contrast = i 
             text.draw()    

@@ -104,7 +104,6 @@ def buttonDemo( win, joystick, keyboard ):
                                    alignHoriz='center')
     
         # Animate
-        text.contrast = 1
         for i in np.array(range(100,-100,-2))/100.0:
             text.contrast = i 
             text.draw()    
@@ -112,6 +111,17 @@ def buttonDemo( win, joystick, keyboard ):
             if RECORD:
                 # store an image of every upcoming screen refresh:
                 win.getMovieFrame(buffer='back')
+            
+            # Check keyboard for button presses
+            keys = keyboard.getPresses()
+            # Check joystick for button presses    
+            if joystick.Start() or (' ' in keys):
+                vid_play = False
+                repeat_demo = False
+                break
+            
+        if vid_play==False:
+            break
                 
                 
         for i in range(len(videolist)):
