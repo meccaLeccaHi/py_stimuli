@@ -117,14 +117,17 @@ def instruct_screen( win ):
             cont_step *= -1
         fin_text.contrast = cont_out
 
+        # Draw everything to the screen and post
         img.draw()
         instr_img.draw()
         fin_text.draw()
+        time.sleep(.01)
         win.flip()
         if RECORD:
             # store an image of every upcoming screen refresh:
             win.getMovieFrame(buffer='back')
         
+        # Break if 'start' or 'space' is pressed
         if joy.Start() or (' ' in keyboard.getPresses()):
             instruct_play = False
             break
