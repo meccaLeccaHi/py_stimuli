@@ -77,7 +77,7 @@ def instruct_screen( win ):
     animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
                            
-    fin_text = visual.TextStim(win, text="Press <Start> to proceed",
+    fin_text = visual.TextStim(win=win, text="Press <Start> to proceed",
                                pos = [0, -(height/2)+50],
                                height = 50,
                                wrapWidth = width,
@@ -381,6 +381,9 @@ break_exp = False
 
 ## Initialize variables
 
+# Counter
+play_reps = 0
+
 # Define path for figure output
 fig_dir = "/home/adam/Desktop/py_stimuli/expEyeTrack/beh_figs/"
     
@@ -416,12 +419,12 @@ EYE_TRACKER = 0; # 1: yes, 0: no
 # Boolean to simulate tracker activity with mouse
 SIMULATE = 1; # 1: yes, 0: no
 # Boolean for presence of joystick (N64 only, currently)
-JOYSTICK = 1; # 1: yes, 0: no
+JOYSTICK = 1; # 1: yes, 0: no1
 # Boolean for intro music
 MUSIC = 1; # 1: yes, 0: no
 
 if JOYSTICK:
-
+    # Initialize joystick device
     joy = xbox.Joystick()
     
 # Include/remove noise controls
@@ -532,8 +535,11 @@ while break_exp==False:
     # Define window objects
     if JOYSTICK:
         
-        # Display start screen and wait for user to press 'Start'
-        start_screen(win)
+        if play_reps==0:
+            # Display start screen and wait for user to press 'Start'
+            start_screen(win)
+        play_reps += 1
+        
         # Display 'incoming transmission' segue
         segue(win)
         # Display instruction screen, then wait for user to press 'Start'
@@ -598,7 +604,7 @@ while break_exp==False:
         # Create movie stim by loading movie from list
         mov = visual.MovieStim3(win, videolist[trial_num]) 
         
-        io.clearEvents()
+#        io.clearEvents()
         if EYE_TRACKER:
             tracker.setRecordingState(True)
         

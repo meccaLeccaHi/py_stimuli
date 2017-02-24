@@ -27,6 +27,9 @@ def buttonDemo( win, joystick, keyboard ):
     width = gtk.gdk.screen_width()
     height = gtk.gdk.screen_height()
 
+    img_pos_list = np.array([[0,height/8],[height/6,0],[0,-height/8],[-height/6,0]])
+    movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
+    
     # Choose which button image to show    
     #button_image = "buttonIcon_N64.png"
     button_image = "xbox_dpad.png"
@@ -83,9 +86,6 @@ def buttonDemo( win, joystick, keyboard ):
                                    bold=True,
                                    wrapWidth = width,
                                    color = 'yellow') 
-        
-        img_pos_list = np.array([[0,height/8],[height/8,0],[0,-height/8],[-height/8,0]])
-        movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
                          
         # Show warning and animate fade
         if train_rep==0:
@@ -174,7 +174,7 @@ def buttonDemo( win, joystick, keyboard ):
             # Instruct user to press 'Start' and wait on button press
             while cmd_list[i]()==0:
             
-                time.sleep(.15)
+                time.sleep(.05)
                 
                 # Oscillate text contrast while we wait
                 if press_text.contrast:
