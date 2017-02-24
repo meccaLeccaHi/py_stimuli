@@ -35,6 +35,12 @@ def buttonDemo( win, joystick, keyboard ):
     button_image = "xbox_dpad.png"
     cue_image = "xbox_dpad_cue.png"
     
+    img_list_button = [button_image]*4
+    img_list_cue = [cue_image]*4
+    
+#    img_list_button = ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]
+#    img_list_cue = img_list_button
+    
     # Create list of functions corresponding to each button used
     cmd_list = [lambda:joystick.dpadUp(),
                 lambda:joystick.dpadRight(),
@@ -56,12 +62,7 @@ def buttonDemo( win, joystick, keyboard ):
     
     while repeat_demo:
                           
-        img = visual.ImageStim(win=win, image=button_image, units="pix")
-        img.size *= .75  # scale the image relative to initial size
-        
-        cue_img = visual.ImageStim(win=win, image=cue_image, units="pix")
-        cue_img.size *= .75  # scale the image relative to initial size
-        
+         
         warn_img = visual.ImageStim(win=win, image="training_mode.png",
                                             units="pix")
         warn_img.size *= .75  # scale the image relative to initial size
@@ -126,8 +127,13 @@ def buttonDemo( win, joystick, keyboard ):
                 
         for i in range(len(videolist)):
             
-#            img.pos = img_pos_list[i]
-#            cue_img.pos = img_pos_list[i]
+            img = visual.ImageStim(win=win, image=img_list_button[i], units="pix")
+            img.size *= .75  # scale the image relative to initial size
+            img.ori += 90.0*i
+
+            cue_img = visual.ImageStim(win=win, image=img_list_cue[i], units="pix")
+            cue_img.size *= .75  # scale the image relative to initial size
+            cue_img.ori += 90.0*i
             
             # Create movie stim by loading movie from list
             mov = visual.MovieStim3(win, videolist[i]) 
@@ -165,20 +171,7 @@ def buttonDemo( win, joystick, keyboard ):
                 break
             
             ## Cue button press
-                    
-#            cue_img.draw()
-#            mov.draw()
-#            instr_text.draw()
-#            fin_text.draw()
-            press_text.pos = img_pos_list[i]
-#            press_text.draw()
-            
-#            # Display updated stim on screen
-#            win.flip()
-#            if RECORD:
-#                # store an image of every upcoming screen refresh:
-#                win.getMovieFrame(buffer='back')
-                
+            press_text.pos = img_pos_list[i]                
             press_text.contrast = 1  
         
             # Instruct user to press 'Start' and wait on button press
@@ -206,9 +199,9 @@ def buttonDemo( win, joystick, keyboard ):
                     vid_play = False
                     break
             
-            # Iterate image orientation (rotation)
-            img.ori += 90.0
-            cue_img.ori += 90.0
+#            # Iterate image orientation (rotation)
+#            img.ori += 90.0
+#            cue_img.ori += 90.0
             
             ## If trial break variable is set, break trial
             if vid_play==False:

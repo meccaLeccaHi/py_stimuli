@@ -143,15 +143,11 @@ def readySet( win ):
             filesound.setVolume(.1)
             
     # Show "Mission starting in:"
-    text = visual.TextStim(win, height=48, text="Mission starting in:")
-    for i in np.array(range(100,-100,-2))/100.0:
-        text.contrast = i 
-        text.draw()    
-        win.flip()
-        if RECORD:
-            # Store an image of every upcoming screen refresh:
-            win.getMovieFrame(buffer='back')
-        
+    text_start = visual.TextStim(win=win,
+                                 height=30,
+                                 pos = [0, height/6],
+                                 text="Mission starting in:")
+                                     
     for i in range(3,0,-1):
         
         # Play sound
@@ -159,11 +155,12 @@ def readySet( win ):
             filesound.play()
         
         # Show count-down        
-        text = visual.TextStim(win, height=48, text=str(i))
+        text = visual.TextStim(win,height=48,bold=True,text=str(i))
     
         # Animate
         for i in np.array(range(100,-100,-2))/100.0:
             text.contrast = i 
+            text_start.draw()
             text.draw()    
             win.flip()
             if RECORD:
@@ -171,7 +168,7 @@ def readySet( win ):
                 win.getMovieFrame(buffer='back')
     
     # Show "Go!"
-    text = visual.TextStim(win, height=48, text="Go!")
+    text = visual.TextStim(win,height=48,bold=True,text="Go!")
     text.draw()    
     win.flip()
     if RECORD:
