@@ -415,7 +415,7 @@ JITTER = .1
 SCALE = 1
 
 # Boolean for debugging mode
-TESTING = 1; # 1: yes, 0: no
+TESTING = 0; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
 RECORD = 0; # 1: yes, 0: no
 # Boolean for including control stimuli
