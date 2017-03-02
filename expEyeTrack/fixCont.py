@@ -144,7 +144,7 @@ def readySet( win ):
             
     # Show "Mission starting in:"
     text_start = visual.TextStim(win=win,
-                                 height=30,
+                                 height=28,
                                  pos = [0, height/6],
                                  text="Mission starting in:")
                                      
@@ -415,7 +415,7 @@ JITTER = .1
 SCALE = 1
 
 # Boolean for debugging mode
-TESTING = 0; # 1: yes, 0: no
+TESTING = 1; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
 RECORD = 0; # 1: yes, 0: no
 # Boolean for including control stimuli
@@ -515,14 +515,16 @@ while break_exp==False:
     ident_ind = videolist[0].find("identity")+len("identity")
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
     
-    # Correct identity # for faces more than 50% along tang. trajectory
+    # Get trajectory (radial v. tangential) from video list    
     TRAJ_LIST = np.unique([x[ident_ind+1:ident_ind+4] for x in videolist],return_inverse = True)[1]
+
+    # Get position along trajectory (identity level) from video list        
     STEP_LIST = np.unique([x[ident_ind+5:ident_ind+8] for x in videolist],return_inverse = True)[1]
-    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))]
-    temp2 = temp1.copy()
-    temp2[temp1<max(temp1)] += 1
-    temp2[temp1==max(temp1)] = 0
-    IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))] = temp2
+
+    # Assign identity # for faces more than 50% along tang. trajectory to opposing identity
+    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))] + 1
+    temp1[temp1==max(temp1)] = 0
+    IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))] = temp1
     
     # Create jitter times (uniformly distributed)
     jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
