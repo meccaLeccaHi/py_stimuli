@@ -77,13 +77,14 @@ def instruct_screen( win ):
     animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
                            
-    fin_text = visual.TextStim(win=win, text="Press <Start> to proceed",
+    fin_text = visual.TextStim(win=win, text="Press <Start> to continue",
                                pos = [0, -(height/2)+50],
                                height = 50,
                                wrapWidth = width,
                                antialias=False,
-                               italic=True,
-                               alignHoriz='center')
+                               alignHoriz='center',
+                               fontFiles=['Top_Secret.ttf'],
+                               font='Top Secret')
     
     # Create background image                           
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
@@ -188,12 +189,14 @@ def segue( win ):
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
 
     # Show message        
-    text_str = "Incoming transmissions for {}...".format(user_name)
-    text = visual.TextStim(win, height = 30,
+    text_str = "Incoming transmissions for {}".format(user_name)
+    text = visual.TextStim(win, height = 45,
                                wrapWidth = width,
                                antialias=True,
                                alignHoriz='center',
-                               text=text_str)
+                               text=text_str,
+                               fontFiles=['Top_Secret.ttf'],
+                               font='Top Secret')
 
     # Animate
     text.contrast = 1
@@ -306,16 +309,18 @@ def end_screen( win, beh_fig_name ):
     fin_text = visual.TextStim(win, text="Play again? <Press Start>",
                            height=50,
                            alignHoriz='center',
-                           italic=True,
                            wrapWidth = width,
-                           pos = [0, -height/2.5])                          
+                           pos = [0, -height/2.5],
+                           fontFiles=['Top_Secret.ttf'],
+                           font='Top Secret')  
+                           
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
     
     beh_img = visual.ImageStim(win=win,
                                image = beh_fig_name,
                                units = "pix",
-                               pos = [-width/6, 0])
+                               pos = [-width/5, 0])
 #    beh_img.size *= .75  # scale the image relative to initial size
 
     # Instruct user to press 'Start'

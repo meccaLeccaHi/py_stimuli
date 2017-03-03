@@ -80,7 +80,7 @@ def buttonDemo( win, joystick, keyboard ):
         
     while repeat_demo:
                                            
-        instr_text = visual.TextStim(win, text="Identify each with these buttons:",
+        instr_text = visual.TextStim(win, text="...by pressing these buttons:",
                                    height=30,
                                    alignHoriz='center',
                                    wrapWidth = width,
@@ -121,7 +121,7 @@ def buttonDemo( win, joystick, keyboard ):
         for i in scaled_logDist:
             text.contrast = i 
             text.draw()
-            dec_img.contrast = i
+#            dec_img.contrast = i
             dec_img.draw()
             win.flip()
             if RECORD:
@@ -272,8 +272,8 @@ def buttonDemo( win, joystick, keyboard ):
                 curr_time = time.time()
                 
             wait_img = visual.ImageStim(win=win, image=wait_img_list[sw], units="pix")
-            wait_img.size *= .75  # Scale the image relative to initial size
-            wait_img.pos = [0, -height/5]
+#            wait_img.size *= .75  # Scale the image relative to initial size
+            wait_img.pos = [0, -height/4]
             
             # Text to repeat or proceed
             loop_text_rep = visual.TextStim(win, text="Repeat training?",
