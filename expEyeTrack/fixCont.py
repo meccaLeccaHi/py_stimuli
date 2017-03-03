@@ -371,68 +371,68 @@ def end_screen( win, beh_fig_name ):
                     # store an image of every upcoming screen refresh:
                     win.getMovieFrame(buffer='back')
                 
-            break_exp = False
-            break_endscr = True
+            break_exp=False
+            break_endscr=True
             
             break
         elif joy.Back() or ('q' in keys):
             # Stop music
             if MUSIC:
                 filesound.stop()
-            break_exp = True
-            break_endscr = True
+            break_exp=True
+            break_endscr=True
             break
     return break_exp
 
-
-
 ## Start script
 # Initialize boolean to break and end experiment
-break_exp = False
+break_exp=False
 
 ## Initialize variables
 
 # Counter
-play_reps = 0
+play_reps=0
 
 # Define path for figure output
-fig_dir = "/home/adam/Desktop/py_stimuli/expEyeTrack/beh_figs/"
+fig_dir="/home/adam/Desktop/py_stimuli/expEyeTrack/beh_figs/"
     
 # Find movies matching wildcard search
-videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
-videolist = glob.glob(videopath + '*.avi')
+videopath='/home/adam/Desktop/py_stimuli/JonesStimset/'
+videolist=glob.glob(videopath + '*.avi')
 #videolist = videolist[0:5]
 
 # Set header path
-headerpath = '/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
+headerpath='/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
 
  # Get current screen size (works for single monitor only)
-width = gtk.gdk.screen_width()
-height = gtk.gdk.screen_height()
+width=gtk.gdk.screen_width()
+height=gtk.gdk.screen_height()
     
 # Number of trials of each stimulus to run
-BLOCK_REPS = 1
+BLOCK_REPS=1
+# Decision cue window (seconds)
+DEC_WIN=2
 # Inter-stimulus interval (seconds)
-ISI = 1
+ISI=1
 # Jitter range (+/-seconds)
-JITTER = .1
+JITTER=.1
 # Scaling of image (none = 1)
-SCALE = 1
+SCALE=1
 
 # Boolean for debugging mode
-TESTING = 0; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
-RECORD = 0; # 1: yes, 0: no
+RECORD=0; # 1: yes, 0: no
 # Boolean for including control stimuli
-CONTROLS = 0; # 1: yes, 0: no
+CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
-EYE_TRACKER = 0; # 1: yes, 0: no
+EYE_TRACKER=0; # 1: yes, 0: no
 # Boolean to simulate tracker activity with mouse
-SIMULATE = 1; # 1: yes, 0: no
+SIMULATE=1; # 1: yes, 0: no
 # Boolean for presence of joystick (N64 only, currently)
-JOYSTICK = 1; # 1: yes, 0: no1
+JOYSTICK=1; # 1: yes, 0: no1
 # Boolean for intro music
-MUSIC = 1; # 1: yes, 0: no
+MUSIC=1; # 1: yes, 0: no
 
 if JOYSTICK:
     # Initialize joystick device
@@ -561,7 +561,7 @@ while break_exp==False:
             # Initialize devices for future access
      
         # Run demo on button-identity mapping
-        buttonDemo(win, joy, keyboard)
+        buttonDemo(win,joy,keyboard)
         
         # Create relevant image stimuli
         dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
@@ -569,7 +569,7 @@ while break_exp==False:
         wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
     
     # Countdown to start
-    readySet( win )
+    readySet(win)
     
     # Set up eye-tracker visual objects
     if EYE_TRACKER:
@@ -727,12 +727,10 @@ while break_exp==False:
             # Stop eye data recording
             tracker.setRecordingState(False)
          
-        delay = ISI + jitter_times[trial_num]
-        
         # Check joystick for button presses
         if JOYSTICK:
             # Poll joystick for n seconds
-            RESP[trial_num], RESP_TIME[trial_num] = poll_buttons(delay)
+            RESP[trial_num], RESP_TIME[trial_num] = poll_buttons(DEC_WIN)
         
         # Pause for n seconds
         tr_text.draw()
@@ -741,7 +739,7 @@ while break_exp==False:
             prog_bar.draw()
             corr_bar.draw()
         win.flip(clearBuffer=True)
-        time.sleep(delay)
+        time.sleep(ISI + jitter_times[trial_num])
             
         # Log ISI end time for header
         ISI_END[trial_num] = core.getTime()
