@@ -5,7 +5,7 @@ Created on Thu Feb 16 16:49:07 2017
 @author: root
 """
 
-def buttonDemo( win, joystick, keyboard ):
+def buttonDemo( win, joystick, keyboard, side='L' ):
     
     from psychopy import visual # core, 
 #    from psychopy.iohub.client import launchHubServer
@@ -27,7 +27,7 @@ def buttonDemo( win, joystick, keyboard ):
     width = gtk.gdk.screen_width()
     height = gtk.gdk.screen_height()
 
-    img_pos_list = np.array([[0,height/8],[height/6,0],[0,-height/8],[-height/6,0]])
+    img_pos_list = np.array([[0,height/7],[height/6,0],[0,-height/7],[-height/6,0]])
     movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
     
     # Choose which button image to show    
@@ -35,26 +35,28 @@ def buttonDemo( win, joystick, keyboard ):
     button_image = "xbox_dpad.png"
     cue_image = "xbox_dpad_cue.png"
        
-    img_list_button = [button_image]*4
-    img_list_cue = [cue_image]*4
-    
-#    img_list_button = ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]
-#    img_list_cue = img_list_button
-    
+    if side=='R':
+        img_list_button = ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]
+        img_list_cue = img_list_button
+        
+        # Create list of functions corresponding to each button used
+        cmd_list = [lambda:joystick.Y(),
+                    lambda:joystick.B(),
+                    lambda:joystick.A(),
+                    lambda:joystick.X()]
+    else:
+        img_list_button = [button_image]*4
+        img_list_cue = [cue_image]*4
+        
+        # Create list of functions corresponding to each button used
+        cmd_list = [lambda:joystick.dpadUp(),
+                    lambda:joystick.dpadRight(),
+                    lambda:joystick.dpadDown(),
+                    lambda:joystick.dpadLeft()] 
+        
     start_image = "xbox_start.png"
     back_image = "xbox_back.png"
-    wait_img_list = [start_image, back_image]
-    
-    # Create list of functions corresponding to each button used
-    cmd_list = [lambda:joystick.dpadUp(),
-                lambda:joystick.dpadRight(),
-                lambda:joystick.dpadDown(),
-                lambda:joystick.dpadLeft()]  
-    
-#    cmd_list = [lambda:joystick.Y(),
-#                lambda:joystick.B(),
-#                lambda:joystick.A(),
-#                lambda:joystick.X()]  
+    wait_img_list = [start_image, back_image] 
     
     RECORD = 0
     
@@ -71,11 +73,13 @@ def buttonDemo( win, joystick, keyboard ):
     
     dec_img = visual.ImageStim(win=win,image="decision.png",
                                units="pix")
-    dec_img.size *= .75  # Scale the image relative to initial size
-    
+#    dec_img.size *= .75  # Scale the image relative to initial size
+    dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",
+                               units="pix")
+                               
     OldRange = (1.0 - 0)  
     NewRange = (1.0 - -1.0)  
-    logDist = (np.logspace(0, 1.0, 200, endpoint=True) / 10)
+    logDist = (np.logspace(0, 1.0, 100, endpoint=True) / 10)
     scaled_logDist = (((logDist * NewRange) / OldRange) + -1.0)*-1
         
     while repeat_demo:
@@ -94,7 +98,7 @@ def buttonDemo( win, joystick, keyboard ):
                                    color = 'grey',
                                    pos=[0,-height/2 + 50])
                                    
-        press_text = visual.TextStim(win, text="PRESS",
+        press_text = visual.TextStim(win, text="PRESS\n NOW",
                                    height=25,
                                    alignHoriz='center',
                                    bold=True,
@@ -116,22 +120,52 @@ def buttonDemo( win, joystick, keyboard ):
         text = visual.TextStim(win,height=48,
                                    text="When you see this sign...",
                                    pos=[0,height/4],
+                                   wrapWidth = width,
                                    alignHoriz='center')
-        # Animate
+        # Animate face halo
+        cont_step = -.1
+        cont_out = 1.0  
+        curr_time = time.time()
+        
+        while time.time()-curr_time < 3:
+        
+            # Oscillate img contrast
+            cont_out = cont_out + cont_step
+            if (cont_out<-.9) or (cont_out>.9):
+                cont_step *= -1
+            dec_hl_img.contrast = cont_out
+            
+            # Draw everything to the screen and post
+            text.draw()
+            dec_hl_img.draw()
+            dec_img.draw()
+            win.flip()
+            if RECORD:
+                # Store an image of every upcoming screen refresh:
+                win.getMovieFrame(buffer='back')
+        
+            # Break if 'start' or 'space' is pressed
+            if joystick.Start() or (' ' in keyboard.getPresses()):
+                vid_play = False
+                repeat_demo = False
+                break
+        
+        if vid_play==False:
+            break 
+          
+        # Animate text
         for i in scaled_logDist:
             text.contrast = i 
             text.draw()
-#            dec_img.contrast = i
+            dec_img.contrast = i
             dec_img.draw()
             win.flip()
             if RECORD:
                 # Store an image of every upcoming screen refresh:
                 win.getMovieFrame(buffer='back')
             
-            # Check keyboard for button presses
-            keys = keyboard.getPresses()
-            # Check joystick for button presses    
-            if joystick.Start() or (' ' in keys):
+            # Break if 'start' or 'space' is pressed   
+            if joystick.Start() or (' ' in keyboard.getPresses()):
                 vid_play = False
                 repeat_demo = False
                 break
@@ -141,10 +175,30 @@ def buttonDemo( win, joystick, keyboard ):
                                       
         # Show 2nd block of instructions        
         text = visual.TextStim(win,height=48,
-                                   text="Identify which of these 4 people\nyou see or hear...",
+                                   text="Identify which of the following\n4 people you see or hear...",
+                                   wrapWidth = width,
                                    alignHoriz='center')
-    
-        # Animate
+        text.draw()    
+        win.flip()
+        if RECORD:
+            # Store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
+                
+        # Pause for reading
+        curr_time = time.time()
+        while time.time()-curr_time < 3.5:
+            # Check keyboard for button presses
+            keys = keyboard.getPresses()
+            # Check joystick for button presses    
+            if joystick.Start() or (' ' in keys):
+                vid_play = False
+                repeat_demo = False
+                break
+        
+        if vid_play==False:
+            break
+        
+        # Animate fade
         for i in scaled_logDist:
             text.contrast = i 
             text.draw()    
@@ -164,16 +218,21 @@ def buttonDemo( win, joystick, keyboard ):
         if vid_play==False:
             break
                 
-                
         for i in range(len(videolist)):
             
             img = visual.ImageStim(win=win, image=img_list_button[i], units="pix")
-            img.size *= .75  # Scale the image relative to initial size
-            img.ori += 90.0*i
+            if side=='R':
+                img.size *= .45  # Scale the image relative to initial size
+            else:
+                img.size *= .75  # Scale the image relative to initial size
+                img.ori += 90.0*i
 
-            cue_img = visual.ImageStim(win=win, image=img_list_cue[i], units="pix")
-            cue_img.size *= .75  # Scale the image relative to initial size
-            cue_img.ori += 90.0*i
+            if side=='R':
+                cue_img = img
+            else:
+                cue_img = visual.ImageStim(win=win, image=img_list_cue[i], units="pix")
+                cue_img.size *= .75  # Scale the image relative to initial size
+                cue_img.ori += 90.0*i
             
             # Create movie stim by loading movie from list
             mov = visual.MovieStim3(win, videolist[i]) 

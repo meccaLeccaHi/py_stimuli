@@ -231,13 +231,13 @@ def poll_buttons( delay ):
         win.getMovieFrame(buffer='back')
 
     while time.time()-curr_time < delay:
-        if joy.dpadUp():
+        if cmd_list[0]():
             resp = 0
-        elif joy.dpadRight():
+        elif cmd_list[1]():
             resp = 1
-        elif joy.dpadDown():
+        elif cmd_list[2]():
             resp = 2
-        elif joy.dpadLeft():
+        elif cmd_list[3]():
             resp = 3
             
         if resp!= None:
@@ -408,6 +408,8 @@ headerpath='/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
 width=gtk.gdk.screen_width()
 height=gtk.gdk.screen_height()
     
+# Lateral side of controller to use
+SIDE='R'
 # Number of trials of each stimulus to run
 BLOCK_REPS=1
 # Decision cue window (seconds)
@@ -435,8 +437,23 @@ JOYSTICK=1; # 1: yes, 0: no1
 MUSIC=1; # 1: yes, 0: no
 
 if JOYSTICK:
+    
     # Initialize joystick device
     joy = xbox.Joystick()
+    
+    if SIDE=='R':
+        # Create list of functions corresponding to each button used
+        cmd_list = [lambda:joy.Y(),
+                    lambda:joy.B(),
+                    lambda:joy.A(),
+                    lambda:joy.X()]
+    else:
+        # Create list of functions corresponding to each button used
+        cmd_list = [lambda:joy.dpadUp(),
+                    lambda:joy.dpadRight(),
+                    lambda:joy.dpadDown(),
+                    lambda:joy.dpadLeft()] 
+
     
 # Include/remove noise controls
 if CONTROLS==0:
@@ -561,7 +578,7 @@ while break_exp==False:
             # Initialize devices for future access
      
         # Run demo on button-identity mapping
-        buttonDemo(win,joy,keyboard)
+        buttonDemo(win,joy,keyboard,SIDE)
         
         # Create relevant image stimuli
         dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
