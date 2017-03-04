@@ -82,9 +82,9 @@ def instruct_screen( win ):
                                height = 50,
                                wrapWidth = width,
                                antialias=False,
-                               alignHoriz='center',
-                               fontFiles=['Top_Secret.ttf'],
-                               font='Top Secret')
+                               alignHoriz='center')
+#                               fontFiles=['Top_Secret.ttf'],
+#                               font='Top Secret')
     
     # Create background image                           
     img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
@@ -210,6 +210,7 @@ def segue( win ):
             win.getMovieFrame(buffer='back')
     
     time.sleep(.4)
+    filesound.stop()
 
 # Joystick response function
 def poll_buttons( delay ):
