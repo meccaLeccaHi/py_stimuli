@@ -22,7 +22,7 @@ from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
 from psychopy import sound
 
-import glob, time, csv, datetime, gtk, xbox # , subprocess, os
+import glob, time, csv, datetime, gtk, xbox, os # , subprocess
 import numpy as np
 
 # Import custom functions
@@ -395,22 +395,22 @@ break_exp=False
 play_reps=0
 
 # Define path for figure output
-fig_dir="/home/adam/Desktop/py_stimuli/expEyeTrack/beh_figs/"
+fig_dir=os.environ['HOME']+"/Desktop/py_stimuli/expEyeTrack/beh_figs/"
     
 # Find movies matching wildcard search
-videopath='/home/adam/Desktop/py_stimuli/JonesStimset/'
+videopath=os.environ['HOME']+"/Desktop/py_stimuli/JonesStimset/"
 videolist=glob.glob(videopath + '*.avi')
 #videolist = videolist[0:5]
 
 # Set header path
-headerpath='/home/adam/Desktop/py_stimuli/expEyeTrack/headers/'
+headerpath=os.environ['HOME']+"Desktop/py_stimuli/expEyeTrack/headers/"
 
  # Get current screen size (works for single monitor only)
 width=gtk.gdk.screen_width()
 height=gtk.gdk.screen_height()
     
 # Lateral side of controller to use
-SIDE='R'
+SIDE='L'
 # Number of trials of each stimulus to run
 BLOCK_REPS=1
 # Decision cue window (seconds)
@@ -423,7 +423,7 @@ JITTER=.1
 SCALE=1
 
 # Boolean for debugging mode
-TESTING=0; # 1: yes, 0: no
+TESTING=1; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
 RECORD=0; # 1: yes, 0: no
 # Boolean for including control stimuli

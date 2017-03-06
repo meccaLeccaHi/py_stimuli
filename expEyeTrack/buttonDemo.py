@@ -15,11 +15,11 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     prefs.general['audioLib'] = ['pygame']
     from psychopy import sound
     
-    import glob, gtk, time # , csv, datetime
+    import glob, gtk, time, os # , csv, datetime
     import numpy as np
     
     # Find movies matching wildcard search
-    videopath = '/home/adam/Desktop/py_stimuli/JonesStimset/'
+    videopath = os.environ['HOME']+"/Desktop/py_stimuli/JonesStimset/"
     videolist = glob.glob(videopath + '*rad_100_audVid.avi')
     videolist.sort()
     
