@@ -403,7 +403,7 @@ videolist=glob.glob(videopath + '*.avi')
 #videolist = videolist[0:5]
 
 # Set header path
-headerpath=os.environ['HOME']+"Desktop/py_stimuli/expEyeTrack/headers/"
+headerpath=os.environ['HOME']+"/Desktop/py_stimuli/expEyeTrack/headers/"
 
  # Get current screen size (works for single monitor only)
 width=gtk.gdk.screen_width()
@@ -423,7 +423,7 @@ JITTER=.1
 SCALE=1
 
 # Boolean for debugging mode
-TESTING=1; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
 RECORD=0; # 1: yes, 0: no
 # Boolean for including control stimuli
@@ -487,7 +487,7 @@ win = visual.Window(SCREEN_SIZE.tolist(),
                     units='pix',
                     fullscr=FLSCRN,
                     allowGUI=False,
-                    color='black', 
+                    color=[-1,-1,-1],  
                     winType='pyglet')
                         
 ## Initialize devices    
@@ -545,9 +545,9 @@ while break_exp==False:
     STEP_LIST = np.unique([x[ident_ind+5:ident_ind+8] for x in videolist],return_inverse = True)[1]
 
     # Assign identity # for faces more than 50% along tang. trajectory to opposing identity
-    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))] + 1
+    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] + 1
     temp1[temp1==max(temp1)] = 0
-    IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST<=1))] = temp1
+    IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] = temp1
     
     # Create jitter times (uniformly distributed)
     jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
