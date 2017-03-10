@@ -5,6 +5,7 @@
 These scripts make use of the following toolboxes:
 ## - Experiment software:
 **Psychopy** http://www.psychopy.org/
+- requires recent version with visual.MovieStim3 module
 ## - Eyetracking software:
 **PyGaze** http://www.pygaze.org/
 #### Proprietary tools:
