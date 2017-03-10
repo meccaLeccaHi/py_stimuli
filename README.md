@@ -16,7 +16,7 @@ These scripts make use of the following toolboxes:
 
 **xbox.py** https://github.com/FRC4564/Xbox
 
-##### Each folder contains a single experiment (composed of two files):   
+### Each folder contains a single experiment (composed of two files):   
 
 #### - constants.py
 - Defines constant variables for each experiment (e.g. display size).
@@ -24,7 +24,7 @@ These scripts make use of the following toolboxes:
 #### - experiment.py
 - Script for executing actual experiment.
 
-##### Relies heavily on the examples provided by the following books:
+### Relies heavily on the examples provided by the following books:
 _Python for Experimental Psychologists_ by Edwin S. Dalmaijer  
 _Making Games with Python & Pygame_ by Al Sweigart  
 
