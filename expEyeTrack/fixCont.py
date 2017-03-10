@@ -22,7 +22,7 @@ from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
 from psychopy import sound
 
-import glob, time, csv, datetime, gtk, xbox, os # , subprocess
+import glob, time, csv, datetime, wx, xbox, os # , subprocess
 import numpy as np
 
 # Import custom functions
@@ -405,9 +405,9 @@ videolist=glob.glob(videopath + '*.avi')
 # Set header path
 headerpath=os.environ['HOME']+"/Desktop/py_stimuli/expEyeTrack/headers/"
 
- # Get current screen size (works for single monitor only)
-width=gtk.gdk.screen_width()
-height=gtk.gdk.screen_height()
+# Get current screen size (works for single monitor only)
+app = wx.App(False)
+width, height = wx.GetDisplaySize()
     
 # Lateral side of controller to use
 SIDE='L'
@@ -423,7 +423,7 @@ JITTER=.1
 SCALE=1
 
 # Boolean for debugging mode
-TESTING=0; # 1: yes, 0: no
+TESTING=1; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
 RECORD=0; # 1: yes, 0: no
 # Boolean for including control stimuli

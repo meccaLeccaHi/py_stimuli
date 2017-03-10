@@ -15,7 +15,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     prefs.general['audioLib'] = ['pygame']
     from psychopy import sound
     
-    import glob, gtk, time, os # , csv, datetime
+    import glob, wx, time, os # , csv, datetime
     import numpy as np
     
     # Find movies matching wildcard search
@@ -24,8 +24,8 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     videolist.sort()
     
      # Get current screen size (works for single monitor only)
-    width = gtk.gdk.screen_width()
-    height = gtk.gdk.screen_height()
+    app = wx.App(False)
+    width, height = wx.GetDisplaySize()
 
     img_pos_list = np.array([[0,height/7],[height/6,0],[0,-height/7],[-height/6,0]])
     movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
@@ -69,7 +69,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     # Load images
     warn_img = visual.ImageStim(win=win, image="training_mode.png",
                                 units="pix")
-    warn_img.size *= .75  # Scale the image relative to initial size
+#    warn_img.size *= .75  # Scale the image relative to initial size
     
     dec_img = visual.ImageStim(win=win,image="decision.png",
                                units="pix")
@@ -224,15 +224,15 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             if side=='R':
                 img.size *= .45  # Scale the image relative to initial size
             else:
-                img.size *= .75  # Scale the image relative to initial size
-                img.ori += 90.0*i
+                img.size -= img.size/4  # Scale the image relative to initial size
+                img.ori += 90*i
 
             if side=='R':
                 cue_img = img
             else:
                 cue_img = visual.ImageStim(win=win, image=img_list_cue[i], units="pix")
-                cue_img.size *= .75  # Scale the image relative to initial size
-                cue_img.ori += 90.0*i
+                cue_img.size -= cue_img.size/4  # Scale the image relative to initial size
+                cue_img.ori += 90*i
             
             # Create movie stim by loading movie from list
             mov = visual.MovieStim3(win, videolist[i]) 
