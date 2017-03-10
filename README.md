@@ -24,8 +24,9 @@ These scripts make use of the following toolboxes:
 #### - experiment.py
 - Script for executing actual experiment.
 
-##### Relies heavily on the examples provided in the following book:
+##### Relies heavily on the examples provided by the following books:
 _Python for Experimental Psychologists_ by Edwin S. Dalmaijer  
+_Making Games with Python & Pygame_ by Al Sweigart  
 
 **Created by Dr Adam Jones  
 Department of Neurosurgery,  
