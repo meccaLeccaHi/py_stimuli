@@ -22,7 +22,7 @@ from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
 from psychopy import sound
 
-import glob, time, csv, datetime, wx, xbox, os # , subprocess
+import glob, time, csv, datetime, wx, xbox, os, cv2 # , subprocess
 import numpy as np
 
 # Import custom functions
@@ -32,27 +32,55 @@ from plot_beh import plot_beh
 # Start screen function
 def start_screen( win ):
 
-    img = visual.ImageStim(win=win, image="start_screen.png",
-                                    units="pix")
-#    img.size *= SCALE  # scale the image relative to initial size
-
-    # Draw the image to window and show on screen
-    img.draw()
-    win.flip()
-    if RECORD:
-        # store an image of every upcoming screen refresh:
-        win.getMovieFrame(buffer='back')
+    zoom_step = 40
     
+    start_img_fname = "start_screen.png"
+    
+    im = cv2.imread(start_img_fname)
+    height,width,depth = im.shape
+                               
+    img = visual.ImageStim(win=win,
+                           image=start_img_fname,
+                           units="pix")
+#    img.size *= SCALE  # scale the image relative to initial size
+                         
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "theme.wav")
         filesound.setVolume(SND_VOL)
         filesound.play() 
+        
+    for i in range(1,int(width/2),zoom_step):
+        circle_img = np.ones((height,width), np.uint8)*-1
+        cv2.circle(circle_img,(int(width/2),int(height/2)),i,1,thickness=-1)
 
+        img.setMask(circle_img)
+    
+        # Draw the image to window and show on screen
+        img.draw()
+        win.flip()
+        if RECORD:
+            # store an image of every upcoming screen refresh:
+            win.getMovieFrame(buffer='back')
+    
     # Wait on 'Start' button press
     while True:
         if joy.Start():
             break_exp = False
+            
+            for i in range(int(width/2),1,-zoom_step*2):
+                circle_img = np.ones((height,width), np.uint8)*-1
+                cv2.circle(circle_img,(int(width/2),int(height/2)),i,1,thickness=-1)
+        
+                img.setMask(circle_img)
+            
+                # Draw the image to window and show on screen
+                img.draw()
+                win.flip()
+                if RECORD:
+                    # store an image of every upcoming screen refresh:
+                    win.getMovieFrame(buffer='back')
+            
             break
         elif joy.Back() or ('q' in keyboard.getPresses()):
             break_exp = True
@@ -95,7 +123,9 @@ def instruct_screen( win ):
 #                               font='Top Secret')
     
     # Create background image                           
-    img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
+    img = visual.ImageStim(win=win,
+                           image="stars.jpg",
+                           units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
     
     # Animate
@@ -507,8 +537,11 @@ PHOTO_SIZE = 50
 # Pixels must be integers
 PHOTO_POS = np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1])
 
-# Prompt for player name
-user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
+# Prompt user for player name
+if TESTING==1:
+    user_name = "Agent Qwe"
+else:
+    user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
 
 ## Create window
 win = visual.Window(SCREEN_SIZE.tolist(),

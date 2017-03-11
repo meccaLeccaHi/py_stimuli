@@ -57,9 +57,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     start_image = "xbox_start.png"
     back_image = "xbox_back.png"
     wait_img_list = [start_image, back_image] 
-    
-    RECORD = 0
-    
+        
     train_rep = 0
     
     vid_play = True
@@ -76,14 +74,20 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
 #    dec_img.size *= .75  # Scale the image relative to initial size
     dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",
                                units="pix")
-                               
+    
+    # Create vector of log-distributed values for fade effect                           
     OldRange = (1.0 - 0)  
     NewRange = (1.0 - -1.0)  
     logDist = (np.logspace(0, 1.0, 100, endpoint=True) / 10)
     scaled_logDist = (((logDist * NewRange) / OldRange) + -1.0)*-1
         
     while repeat_demo:
-                                           
+        
+        # Reset contrast of decision images                                 
+        dec_img.contrast = 1
+        dec_hl_img.contrast = 1
+        
+        # Create text objects          
         instr_text = visual.TextStim(win, text="...by pressing these buttons:",
                                    height=30,
                                    alignHoriz='center',
@@ -112,9 +116,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 warn_img.contrast = i 
                 warn_img.draw()    
                 win.flip()
-                if RECORD:
-                    # Store an image of every upcoming screen refresh:
-                    win.getMovieFrame(buffer='back')
         
         # Show 1st block of instructions        
         text = visual.TextStim(win,height=48,
@@ -140,9 +141,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             dec_hl_img.draw()
             dec_img.draw()
             win.flip()
-            if RECORD:
-                # Store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
         
             # Break if 'start' or 'space' is pressed
             if joystick.Start() or (' ' in keyboard.getPresses()):
@@ -160,9 +158,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             dec_img.contrast = i
             dec_img.draw()
             win.flip()
-            if RECORD:
-                # Store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
             
             # Break if 'start' or 'space' is pressed   
             if joystick.Start() or (' ' in keyboard.getPresses()):
@@ -177,12 +172,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
         text = visual.TextStim(win,height=48,
                                    text="Identify which of the following\n4 people you see or hear...",
                                    wrapWidth = width,
+                                   antialias=True,
                                    alignHoriz='center')
         text.draw()    
         win.flip()
-        if RECORD:
-            # Store an image of every upcoming screen refresh:
-            win.getMovieFrame(buffer='back')
                 
         # Pause for reading
         curr_time = time.time()
@@ -203,9 +196,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             text.contrast = i 
             text.draw()    
             win.flip()
-            if RECORD:
-                # Store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
             
             # Check keyboard for button presses
             keys = keyboard.getPresses()
@@ -220,7 +210,9 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 
         for i in range(len(videolist)):
             
-            img = visual.ImageStim(win=win, image=img_list_button[i], units="pix")
+            img = visual.ImageStim(win=win,
+                                   image=img_list_button[i],
+                                   units="pix")
             if side=='R':
                 img.size *= .45  # Scale the image relative to initial size
             else:
@@ -230,7 +222,9 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             if side=='R':
                 cue_img = img
             else:
-                cue_img = visual.ImageStim(win=win, image=img_list_cue[i], units="pix")
+                cue_img = visual.ImageStim(win=win,
+                                           image=img_list_cue[i],
+                                            units="pix")
                 cue_img.size -= cue_img.size/4  # Scale the image relative to initial size
                 cue_img.ori += 90*i
             
@@ -253,9 +247,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
         
                 # Display updated stim on screen
                 win.flip()
-                if RECORD:
-                    # Store an image of every upcoming screen refresh:
-                    win.getMovieFrame(buffer='back')
                 
                 # Check keyboard for button presses
                 keys = keyboard.getPresses()
@@ -290,9 +281,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 fin_text.draw()
                 press_text.draw()    
                 win.flip()
-                if RECORD:
-                    # Store an image of every upcoming screen refresh:
-                    win.getMovieFrame(buffer='back')
                  
                 if joystick.Start() or (' ' in keys):
                     vid_play = False
@@ -340,6 +328,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                                    color=color_list[1-sw],
                                    alignHoriz='center',
                                    wrapWidth = width,
+                                   antialias=True,
                                    pos = [-width/5, height/4])
     
             loop_text_proc = visual.TextStim(win, text="Proceed to mission",
@@ -347,6 +336,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                                    color=color_list[sw],
                                    alignHoriz='center',
                                    wrapWidth = width,
+                                   antialias=True,
                                    pos = [width/5, height/4]) 
                                    
             loop_text_rep.draw()    
@@ -354,9 +344,6 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             wait_img.draw()
             
             win.flip()
-            if RECORD:
-                # Store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
                                    
             if joystick.Back():
                 break
