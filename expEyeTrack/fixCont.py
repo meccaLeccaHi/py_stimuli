@@ -14,7 +14,7 @@ future versions should read compressed movies-
 
 #from constants import DISPSIZE
 
-from psychopy import core, visual, parallel
+from psychopy import core, visual #, parallel
 from psychopy.iohub.client import launchHubServer
 
 # Force psychopy to use particular audio library
@@ -46,16 +46,23 @@ def start_screen( win ):
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "theme.wav")
-        filesound.setVolume(.1)
+        filesound.setVolume(SND_VOL)
         filesound.play() 
 
     # Wait on 'Start' button press
     while True:
         if joy.Start():
-            # Stop music
-            if MUSIC:
-                filesound.stop()
+            break_exp = False
             break
+        elif joy.Back() or ('q' in keyboard.getPresses()):
+            break_exp = True
+            break
+    
+    # Stop music
+    if MUSIC:
+        filesound.stop()
+        
+    return break_exp
         
 # Give subject instructions
 def instruct_screen( win ):
@@ -65,11 +72,12 @@ def instruct_screen( win ):
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "mission-briefing.wav")
-        filesound.setVolume(.1)
+        filesound.setVolume(SND_VOL)
         filesound.play()
         
-    instr_img = visual.ImageStim(win=win, image="instructions.png",
-                                    units="pix")
+    instr_img = visual.ImageStim(win=win,
+                                 image="instructions.png",
+                                 units="pix")
     #    img.size *= SCALE  # scale the image relative to initial size
     
     start_pos = np.array([0, -height/3])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
@@ -81,7 +89,7 @@ def instruct_screen( win ):
                                pos = [0, -(height/2)+50],
                                height = 50,
                                wrapWidth = width,
-                               antialias=False,
+                               antialias=True,
                                alignHoriz='center')
 #                               fontFiles=['Top_Secret.ttf'],
 #                               font='Top Secret')
@@ -101,7 +109,8 @@ def instruct_screen( win ):
         if RECORD:
             # Store image of upcoming screen refresh
             win.getMovieFrame(buffer='back')
-            
+        
+        # Skip if 'start' or space bar are pressed
         if joy.Start() or (' ' in keyboard.getPresses()):
             instruct_play = False
             break
@@ -141,12 +150,13 @@ def readySet( win ):
     
     if MUSIC:
             filesound = sound.Sound(value="beep.wav")
-            filesound.setVolume(.1)
+            filesound.setVolume(SND_VOL)
             
     # Show "Mission starting in:"
     text_start = visual.TextStim(win=win,
                                  height=28,
                                  pos = [0, height/6],
+                                 antialias=True,
                                  text="Mission starting in:")
                                      
     for i in range(3,0,-1):
@@ -156,7 +166,11 @@ def readySet( win ):
             filesound.play()
         
         # Show count-down        
-        text = visual.TextStim(win,height=48,bold=True,text=str(i))
+        text = visual.TextStim(win,
+                               height=56,
+                               bold=True,
+                               antialias=True,
+                               text=str(i))
     
         # Animate
         for i in np.array(range(100,-100,-2))/100.0:
@@ -169,7 +183,11 @@ def readySet( win ):
                 win.getMovieFrame(buffer='back')
     
     # Show "Go!"
-    text = visual.TextStim(win,height=48,bold=True,text="Go!")
+    text = visual.TextStim(win,
+                           height=56,
+                           bold=True,
+                           antialias=True,
+                           text="Go!")
     text.draw()    
     win.flip()
     if RECORD:
@@ -182,19 +200,21 @@ def segue( win ):
     # Play sound
     if MUSIC:
             filesound = sound.Sound(value = "morse.wav")
-            filesound.setVolume(.1)
+            filesound.setVolume(SND_VOL)
             filesound.play()
             
     # Load background image
-    img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
+    img = visual.ImageStim(win=win,
+                           image="stars.jpg",
+                           units="pix")
 
     # Show message        
     text_str = "Incoming transmissions for {}".format(user_name)
     text = visual.TextStim(win, height = 45,
                                wrapWidth = width,
-                               antialias=True,
                                alignHoriz='center',
                                text=text_str,
+                               antialias=True,
                                fontFiles=['Top_Secret.ttf'],
                                font='Top Secret')
 
@@ -288,7 +308,7 @@ def end_screen( win, beh_fig_name ):
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "tyson.wav")
-        filesound.setVolume(.4)
+        filesound.setVolume(SND_VOL)
         filesound.play()
     
     text_str = user_name + "'s score:"
@@ -299,6 +319,7 @@ def end_screen( win, beh_fig_name ):
                            height=50,
                            alignHoriz='center',
                            wrapWidth = width,
+                           antialias=True,
                            pos = [0, height/3])
     score_text = visual.TextStim(win, text=corr_str,
                            height=70,
@@ -306,16 +327,20 @@ def end_screen( win, beh_fig_name ):
                            alignHoriz='center',
                            bold=True,
                            wrapWidth = width,
+                           antialias=True,
                            pos = [width/6, 0])
     fin_text = visual.TextStim(win, text="Play again? <Press Start>",
                            height=50,
                            alignHoriz='center',
                            wrapWidth = width,
                            pos = [0, -height/2.5],
+                           antialias=True,
                            fontFiles=['Top_Secret.ttf'],
                            font='Top Secret')  
                            
-    img = visual.ImageStim(win=win, image="stars.jpg", units="pix")
+    img = visual.ImageStim(win=win,
+                           image="stars.jpg",
+                           units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
     
     beh_img = visual.ImageStim(win=win,
@@ -323,13 +348,11 @@ def end_screen( win, beh_fig_name ):
                                units = "pix",
                                pos = [-width/5, 0])
 #    beh_img.size *= .75  # scale the image relative to initial size
-
-    # Instruct user to press 'Start'
         
     cont_step = -.1
     cont_out = 1.0 
         
-    # Wait on 'Start' button press
+    # Instruct user to press 'Start' and wait on button press
     while break_endscr==False:
         
         # Oscillate text contrast while we wait
@@ -356,7 +379,7 @@ def end_screen( win, beh_fig_name ):
             if MUSIC:
                 filesound.stop()
                 filesound = sound.Sound(value = "yes.wav")
-                filesound.setVolume(.5)
+                filesound.setVolume(SND_VOL)
                 filesound.play()
                 
             # Animate
@@ -385,11 +408,10 @@ def end_screen( win, beh_fig_name ):
             break
     return break_exp
 
-## Start script
+## Start script - initialize variables
+
 # Initialize boolean to break and end experiment
 break_exp=False
-
-## Initialize variables
 
 # Counter
 play_reps=0
@@ -421,6 +443,8 @@ ISI=1
 JITTER=.1
 # Scaling of image (none = 1)
 SCALE=1
+# Volume of sound effects
+SND_VOL=.25
 
 # Boolean for debugging mode
 TESTING=0; # 1: yes, 0: no
@@ -439,9 +463,13 @@ MUSIC=1; # 1: yes, 0: no
 
 if JOYSTICK:
     
-    # Initialize joystick device
-    joy = xbox.Joystick()
-    
+    # Initialize joystick device - reload module, if necessary
+    try:
+        joy = xbox.Joystick()
+    except:
+        import xbox
+        joy = xbox.Joystick()
+        
     if SIDE=='R':
         # Create list of functions corresponding to each button used
         cmd_list = [lambda:joy.Y(),
@@ -569,17 +597,19 @@ while break_exp==False:
         
         if play_reps==0:
             # Display start screen and wait for user to press 'Start'
-            start_screen(win)
+            break_exp = start_screen(win)
         play_reps += 1
         
-        # Display 'incoming transmission' segue
+        if break_exp:
+            break
+
+        # Show 'incoming message...' animation
         segue(win)
+               
         # Display instruction screen, then wait for user to press 'Start'
         instruct_screen(win)
+        
         # Display demonstration of identities and corresponding dpad directions
-            # Initialize devices for future access
-     
-        # Run demo on button-identity mapping
         buttonDemo(win,joy,keyboard,SIDE)
         
         # Create relevant image stimuli
@@ -592,22 +622,36 @@ while break_exp==False:
     
     # Set up eye-tracker visual objects
     if EYE_TRACKER:
-        gaze_ok_region = visual.Circle(win, radius=200, units='pix')
-        gaze_dot = visual.GratingStim(win, tex=None, mask='gauss', pos=(0, 0),
-                                  size=(33, 33), color='green', units='pix')
+        gaze_ok_region = visual.Circle(win,
+                                       radius=200,
+                                       units='pix')
+        gaze_dot = visual.GratingStim(win,
+                                      tex=None,
+                                      mask='gauss',
+                                      pos=(0, 0),
+                                      size=(33, 33),
+                                      color='green',
+                                      units='pix')
     # Set up feedback bar
     if JOYSTICK:
-        prog_bar = visual.Rect(win = win, width=75, height=height,
-                    pos = [-(width/2),0], fillColor = 'grey', lineColor = 'grey')
+        prog_bar = visual.Rect(win=win,
+                               width=75,
+                               height=height,
+                               pos=[-(width/2),0],
+                               fillColor='grey',
+                               lineColor='grey')
      
     # Create photodiode patch               
-    photodiode = visual.GratingStim(win, tex=None, mask='none', pos=PHOTO_POS.tolist(),
+    photodiode = visual.GratingStim(win,
+                                    tex=None,
+                                    mask='none',
+                                    pos=PHOTO_POS.tolist(),
                                     size=100)
                                     
         
     ## Launch experiment                                 
     globalClock = core.Clock()  # to track the time since experiment started
-    
+    buttonDemo
     # Run Trials.....
     for trial_num in range(TRIAL_COUNT):
         
@@ -625,16 +669,23 @@ while break_exp==False:
             else:
                 barCol='green'
             # Create '% correct bar'
-            corr_bar = visual.Rect(win=win, width=75, height=height,
-                    pos=[-(width/2),0+corr_move], fillColor=barCol, lineColor=barCol)
+            corr_bar = visual.Rect(win=win,
+                                   width=75,
+                                   height=height,
+                                   pos=[-(width/2),0+corr_move], fillColor=barCol, lineColor=barCol)
                                                   
-        tr_text = visual.TextStim(win, text=(str(trial_num+1)))
-        tr_rect = visual.Rect(win, width=tr_text.boundingBox[0], height=tr_text.boundingBox[1])
+        tr_text = visual.TextStim(win,
+                                  text=(str(trial_num+1)),
+                                  antialias=True)
+        tr_rect = visual.Rect(win,
+                              width=tr_text.boundingBox[0],
+                              height=tr_text.boundingBox[1])
         tr_text.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]     
         tr_rect.pos = tr_text.pos      
                   
         # Create movie stim by loading movie from list
-        mov = visual.MovieStim3(win, videolist[trial_num]) 
+        mov = visual.MovieStim3(win,
+                                videolist[trial_num]) 
         
 #        io.clearEvents()
         if EYE_TRACKER:
@@ -766,7 +817,6 @@ while break_exp==False:
     ## Save log files    
     save_logs()
     
-#    win.close()
 #    ## Save psychometric figs
     plt = plot_beh(STEP_LIST,TRAJ_LIST,CORRECT,rad_only=True,SCORE=average)
     figOut_name = fig_dir + "beh_fig_" + header_nm + ".png"    
@@ -781,7 +831,6 @@ while break_exp==False:
         # Combine movie frames in a  movie file
         win.saveMovieFrames(fileName='mov_file.mp4')
     
-
 ## End experiment   
 win.close() 
 if EYE_TRACKER:
