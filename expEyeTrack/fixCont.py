@@ -14,7 +14,7 @@ future versions should read compressed movies-
 
 #from constants import DISPSIZE
 
-from psychopy import core, visual
+from psychopy import core, visual, parallel
 from psychopy.iohub.client import launchHubServer
 
 # Force psychopy to use particular audio library
@@ -423,7 +423,7 @@ JITTER=.1
 SCALE=1
 
 # Boolean for debugging mode
-TESTING=1; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for recording screen frames to movie output
 RECORD=0; # 1: yes, 0: no
 # Boolean for including control stimuli
@@ -514,6 +514,7 @@ else:
 # Get devices for future access
 keyboard = io.devices.keyboard
 #display = io.devices.display
+#port = parallel.ParallelPort(address=0x0378)
     
 if EYE_TRACKER:
     # Run eyetracker calibration
