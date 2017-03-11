@@ -36,9 +36,11 @@ def start_screen( win ):
     
     start_img_fname = "start_screen.png"
     
+    # Get image dimensions for mask
     im = cv2.imread(start_img_fname)
     height,width,depth = im.shape
-                               
+    
+    # Create image object                           
     img = visual.ImageStim(win=win,
                            image=start_img_fname,
                            units="pix")
@@ -49,37 +51,33 @@ def start_screen( win ):
         filesound = sound.Sound(value = "theme.wav")
         filesound.setVolume(SND_VOL)
         filesound.play() 
-        
+    
+    # Zoom effect (open)    
     for i in range(1,int(width/2),zoom_step):
+        
+        # Create mask        
         circle_img = np.ones((height,width), np.uint8)*-1
         cv2.circle(circle_img,(int(width/2),int(height/2)),i,1,thickness=-1)
-
         img.setMask(circle_img)
     
         # Draw the image to window and show on screen
         img.draw()
         win.flip()
-        if RECORD:
-            # store an image of every upcoming screen refresh:
-            win.getMovieFrame(buffer='back')
     
     # Wait on 'Start' button press
     while True:
         if joy.Start():
             break_exp = False
             
+            # Zoom effect (close)
             for i in range(int(width/2),1,-zoom_step*2):
                 circle_img = np.ones((height,width), np.uint8)*-1
                 cv2.circle(circle_img,(int(width/2),int(height/2)),i,1,thickness=-1)
-        
                 img.setMask(circle_img)
             
                 # Draw the image to window and show on screen
                 img.draw()
                 win.flip()
-                if RECORD:
-                    # store an image of every upcoming screen refresh:
-                    win.getMovieFrame(buffer='back')
             
             break
         elif joy.Back() or ('q' in keyboard.getPresses()):
@@ -136,9 +134,6 @@ def instruct_screen( win ):
         img.draw()
         instr_img.draw()
         win.flip()
-        if RECORD:
-            # Store image of upcoming screen refresh
-            win.getMovieFrame(buffer='back')
         
         # Skip if 'start' or space bar are pressed
         if joy.Start() or (' ' in keyboard.getPresses()):
@@ -163,9 +158,6 @@ def instruct_screen( win ):
         fin_text.draw()
         time.sleep(.01)
         win.flip()
-        if RECORD:
-            # store an image of every upcoming screen refresh:
-            win.getMovieFrame(buffer='back')
         
         # Break if 'start' or 'space' is pressed
         if joy.Start() or (' ' in keyboard.getPresses()):
@@ -208,9 +200,6 @@ def readySet( win ):
             text_start.draw()
             text.draw()    
             win.flip()
-            if RECORD:
-                # store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
     
     # Show "Go!"
     text = visual.TextStim(win,
@@ -220,9 +209,7 @@ def readySet( win ):
                            text="Go!")
     text.draw()    
     win.flip()
-    if RECORD:
-        # store an image of every upcoming screen refresh:
-        win.getMovieFrame(buffer='back')
+
     time.sleep(.25)
     
 def segue( win ):
@@ -255,9 +242,6 @@ def segue( win ):
         img.draw()
         text.draw()    
         win.flip()
-        if RECORD:
-            # store an image of every upcoming screen refresh:
-            win.getMovieFrame(buffer='back')
     
     time.sleep(.4)
     filesound.stop()
@@ -277,9 +261,6 @@ def poll_buttons( delay ):
     prog_bar.draw()
     corr_bar.draw()
     win.flip()
-    if RECORD:
-        # store an image of every upcoming screen refresh:
-        win.getMovieFrame(buffer='back')
 
     while time.time()-curr_time < delay:
         if cmd_list[0]():
@@ -307,9 +288,6 @@ def poll_buttons( delay ):
             prog_bar.draw()
             corr_bar.draw()
             win.flip()
-            if RECORD:
-                # store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
                 
             time.sleep(time_left)
             break
@@ -398,9 +376,6 @@ def end_screen( win, beh_fig_name ):
         score_text.draw()
         fin_text.draw()
         win.flip()
-        if RECORD:
-        # store an image of every upcoming screen refresh:
-            win.getMovieFrame(buffer='back')
         
         # Check devices for button presses
         keys = keyboard.getPresses()
@@ -421,9 +396,6 @@ def end_screen( win, beh_fig_name ):
                 beh_img.draw()
                 text.draw()
                 win.flip()
-                if RECORD:
-                    # store an image of every upcoming screen refresh:
-                    win.getMovieFrame(buffer='back')
                 
             break_exp=False
             break_endscr=True
@@ -478,8 +450,6 @@ SND_VOL=.25
 
 # Boolean for debugging mode
 TESTING=0; # 1: yes, 0: no
-# Boolean for recording screen frames to movie output
-RECORD=0; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -784,9 +754,6 @@ while break_exp==False:
             
             # Display updated stim on screen
             flip_time = win.flip()
-            if RECORD:
-                # store an image of every upcoming screen refresh:
-                win.getMovieFrame(buffer='back')
             
             # Check keyboard for button presses
             keys = keyboard.getPresses()
@@ -859,10 +826,6 @@ while break_exp==False:
     
     # All Trials are done
     break_exp = end_screen( win, figOut_name )
-    
-    if RECORD:
-        # Combine movie frames in a  movie file
-        win.saveMovieFrames(fileName='mov_file.mp4')
     
 ## End experiment   
 win.close() 
