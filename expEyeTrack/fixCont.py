@@ -101,6 +101,16 @@ def instruct_screen( win ):
     
     instruct_play = True
     
+    def start_break():
+    # Break if 'start' or 'space' is pressed
+        if joy.Start() or (' ' in keyboard.getPresses()):
+            instruct_play = False
+            if MUSIC:
+                laserSound()
+        else:
+            instruct_play = True
+        return instruct_play
+                
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "mission-briefing.wav")
@@ -131,8 +141,24 @@ def instruct_screen( win ):
                            units="pix")
 #    img.size *= SCALE  # scale the image relative to initial size
     
-    # Animate
+    
     instr_img.pos = start_pos
+    
+    # Animate (fade-in)
+    for i in np.array(range(-100,100,10))/100.0:
+        instr_img.contrast = i 
+        instr_img.draw()
+        win.flip()
+        
+        # Skip if 'start' or space bar are pressed
+        instruct_play = start_break()
+#        if joy.Start() or (' ' in keyboard.getPresses()):
+#            instruct_play = False
+#            if MUSIC:
+#                laserSound()
+#            break
+    
+    # Animate
     for i in range(animation_duration):
         instr_img.pos += step_pos  # Add to existing value
         # Draw images to window and show on screen
@@ -141,11 +167,12 @@ def instruct_screen( win ):
         win.flip()
         
         # Skip if 'start' or space bar are pressed
-        if joy.Start() or (' ' in keyboard.getPresses()):
-            instruct_play = False
-            if MUSIC:
-                laserSound()
-            break
+        instruct_play = start_break()
+#        if joy.Start() or (' ' in keyboard.getPresses()):
+#            instruct_play = False
+#            if MUSIC:
+#                laserSound()
+#            break
     
     cont_step = -.1
     cont_out = 1.0  
@@ -167,18 +194,12 @@ def instruct_screen( win ):
         win.flip()
         
         # Break if 'start' or 'space' is pressed
-        if joy.Start() or (' ' in keyboard.getPresses()):
-            instruct_play = False
-            if MUSIC:
-                laserSound()
-            
-            # Acknowledge button press with sound
-            if MUSIC:
-                filesound.stop()
-                filesound = sound.Sound(value = "laser.wav")
-                filesound.setVolume(SND_VOL)
-                filesound.play()
-            break
+        instruct_play = start_break()
+#        if joy.Start() or (' ' in keyboard.getPresses()):
+#            instruct_play = False
+#            if MUSIC:
+#                laserSound()
+#            break
 
     # Stop music
     if MUSIC:
@@ -482,7 +503,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=0; # 1: yes, 0: no
+TESTING=1; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
