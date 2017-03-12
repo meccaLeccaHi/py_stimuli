@@ -18,6 +18,15 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     import glob, wx, time, os # , csv, datetime
     import numpy as np
     
+    # Volume of sound effects
+    SND_VOL=.25
+    
+    def laserSound():
+        # Acknowledge button press with sound
+        filesound = sound.Sound(value = "laser.wav")
+        filesound.setVolume(SND_VOL*2)
+        filesound.play()
+
     # Find movies matching wildcard search
     videopath = os.environ['HOME']+"/Desktop/py_stimuli/JonesStimset/"
     videolist = glob.glob(videopath + '*rad_100_audVid.avi')
@@ -146,6 +155,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             if joystick.Start() or (' ' in keyboard.getPresses()):
                 vid_play = False
                 repeat_demo = False
+                
+                # Acknowledge button press with sound
+                laserSound()
+                
                 break
         
         if vid_play==False:
@@ -163,6 +176,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             if joystick.Start() or (' ' in keyboard.getPresses()):
                 vid_play = False
                 repeat_demo = False
+                
+                # Acknowledge button press with sound
+                laserSound()
+                
                 break
             
         if vid_play==False:
@@ -186,6 +203,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             if joystick.Start() or (' ' in keys):
                 vid_play = False
                 repeat_demo = False
+                
+                # Acknowledge button press with sound
+                laserSound()
+                
                 break
         
         if vid_play==False:
@@ -203,6 +224,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             if joystick.Start() or (' ' in keys):
                 vid_play = False
                 repeat_demo = False
+                
+                # Acknowledge button press with sound
+                laserSound()
+                
                 break
             
         if vid_play==False:
@@ -255,6 +280,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                     mov.status = visual.FINISHED
                     vid_play = False
                     repeat_demo = False
+                    
+                    # Acknowledge button press with sound
+                    laserSound()
+                
                     break
             
             if vid_play==False:
@@ -284,6 +313,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                  
                 if joystick.Start() or (' ' in keys):
                     vid_play = False
+                    
+                    # Acknowledge button press with sound
+                    laserSound()
+                
                     break
             
 #            # Iterate image orientation (rotation)
@@ -303,6 +336,10 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 # Check joystick for button presses    
                 if joystick.Start() or (' ' in keys):
                         vid_play = False
+                        
+                        # Acknowledge button press with sound
+                        laserSound()
+                
                         break
                     
         # Prompt user for response (repeat y/n?)
@@ -349,11 +386,16 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 break
             elif joystick.Start():
                 repeat_demo = False
+                
+                # Acknowledge button press with sound
+                laserSound()
+                
                 break
-            
+        
+        # Iterate training demo counter
         train_rep += 1
         
-        ## If trial break variable is set, break trial
+        # If trial break variable is set, break trial
         if vid_play==False:
             break
         

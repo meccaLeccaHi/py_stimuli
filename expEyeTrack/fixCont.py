@@ -69,6 +69,11 @@ def start_screen( win ):
         if joy.Start():
             break_exp = False
             
+            # Acknowledge button press with sound
+            if MUSIC:
+                filesound.stop()
+                laserSound()
+                
             # Zoom effect (close)
             for i in range(int(width/2),1,-zoom_step*2):
                 circle_img = np.ones((height,width), np.uint8)*-1
@@ -80,13 +85,14 @@ def start_screen( win ):
                 win.flip()
             
             break
+        
         elif joy.Back() or ('q' in keyboard.getPresses()):
             break_exp = True
+            
+            # Stop music and break
+            if MUSIC:
+                filesound.stop()        
             break
-    
-    # Stop music
-    if MUSIC:
-        filesound.stop()
         
     return break_exp
         
@@ -138,6 +144,8 @@ def instruct_screen( win ):
         # Skip if 'start' or space bar are pressed
         if joy.Start() or (' ' in keyboard.getPresses()):
             instruct_play = False
+            if MUSIC:
+                laserSound()
             break
     
     cont_step = -.1
@@ -162,6 +170,15 @@ def instruct_screen( win ):
         # Break if 'start' or 'space' is pressed
         if joy.Start() or (' ' in keyboard.getPresses()):
             instruct_play = False
+            if MUSIC:
+                laserSound()
+            
+            # Acknowledge button press with sound
+            if MUSIC:
+                filesound.stop()
+                filesound = sound.Sound(value = "laser.wav")
+                filesound.setVolume(SND_VOL)
+                filesound.play()
             break
 
     # Stop music
@@ -180,7 +197,13 @@ def readySet( win ):
                                  pos = [0, height/6],
                                  antialias=True,
                                  text="Mission starting in:")
-                                     
+    
+    # Animate (fade-in)
+    for i in np.array(range(-100,100,10))/100.0:
+        text_start.contrast = i 
+        text_start.draw()
+        win.flip()
+                                 
     for i in range(3,0,-1):
         
         # Play sound
@@ -194,7 +217,7 @@ def readySet( win ):
                                antialias=True,
                                text=str(i))
     
-        # Animate
+        # Animate (fade-out)
         for i in np.array(range(100,-100,-2))/100.0:
             text.contrast = i 
             text_start.draw()
@@ -224,7 +247,13 @@ def segue( win ):
     img = visual.ImageStim(win=win,
                            image="stars.jpg",
                            units="pix")
-
+                          
+    # Animate background (fade-in)
+    for i in np.array(range(-100,100,2))/100.0:
+        img.mask = np.ones((height,width), np.uint8)*i
+        img.draw()
+        win.flip()
+        
     # Show message        
     text_str = "Incoming transmissions for {}".format(user_name)
     text = visual.TextStim(win, height = 45,
@@ -235,7 +264,7 @@ def segue( win ):
                                fontFiles=['Top_Secret.ttf'],
                                font='Top Secret')
 
-    # Animate
+    # Animate (fade-out)
     text.contrast = 1
     for i in np.array(range(100,-100,-2))/100.0:
         text.contrast = i
@@ -316,7 +345,7 @@ def end_screen( win, beh_fig_name ):
     # Play music
     if MUSIC:
         filesound = sound.Sound(value = "tyson.wav")
-        filesound.setVolume(SND_VOL)
+        filesound.setVolume(SND_VOL*2)
         filesound.play()
     
     text_str = user_name + "'s score:"
@@ -383,9 +412,7 @@ def end_screen( win, beh_fig_name ):
             # Acknowledge button press with sound
             if MUSIC:
                 filesound.stop()
-                filesound = sound.Sound(value = "yes.wav")
-                filesound.setVolume(SND_VOL)
-                filesound.play()
+                laserSound()
                 
             # Animate
             text.contrast = 1
@@ -449,7 +476,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=0; # 1: yes, 0: no
+TESTING=1; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -461,6 +488,13 @@ JOYSTICK=1; # 1: yes, 0: no1
 # Boolean for intro music
 MUSIC=1; # 1: yes, 0: no
 
+if MUSIC:
+    def laserSound():
+        # Acknowledge button press with sound
+        filesound = sound.Sound(value = "laser.wav")
+        filesound.setVolume(SND_VOL*2)
+        filesound.play()
+        
 if JOYSTICK:
     
     # Initialize joystick device - reload module, if necessary
@@ -520,6 +554,19 @@ win = visual.Window(SCREEN_SIZE.tolist(),
                     allowGUI=False,
                     color=[-1,-1,-1],  
                     winType='pyglet')
+                    
+# Fill window with loading screen
+load_text = visual.TextStim(win=win,
+                            text="Loading...",
+                               height = 50,
+                               wrapWidth = width,
+                               antialias=True,
+                               alignHoriz='center') 
+#                               fontFiles=['Top_Secret.ttf'],
+#                               font='Top Secret')
+                               
+load_text.draw()
+win.flip()
                         
 ## Initialize devices    
 if EYE_TRACKER:
@@ -567,7 +614,8 @@ while break_exp==False:
     videolist = [ videolist[i] for i in new_order ]
 
     # Extract identity numbers from video list
-    ident_ind = videolist[0].find("identity")+len("identity")
+    ident_ind = videolist[0].rfind('/')+len("identity")+1
+    # ident_ind = videolist[0].find("identity")+len("identity")
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
     
     # Get trajectory (radial v. tangential) from video list    
