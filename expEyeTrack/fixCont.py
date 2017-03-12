@@ -236,24 +236,24 @@ def readySet( win ):
     time.sleep(.25)
     
 def segue( win ):
-    
-    # Play sound
-    if MUSIC:
-            filesound = sound.Sound(value = "morse.wav")
-            filesound.setVolume(SND_VOL)
-            filesound.play()
-            
+             
     # Load background image
     img = visual.ImageStim(win=win,
                            image="stars.jpg",
                            units="pix")
                           
     # Animate background (fade-in)
-    for i in np.array(range(-100,100,2))/100.0:
+    for i in np.array(range(-100,100,10))/100.0:
         img.mask = np.ones((height,width), np.uint8)*i
         img.draw()
         win.flip()
         
+    # Play sound
+    if MUSIC:
+            filesound = sound.Sound(value = "morse.wav")
+            filesound.setVolume(SND_VOL)
+            filesound.play()
+            
     # Show message        
     text_str = "Incoming transmissions for {}".format(user_name)
     text = visual.TextStim(win, height = 45,
@@ -263,9 +263,15 @@ def segue( win ):
                                antialias=True,
                                fontFiles=['Top_Secret.ttf'],
                                font='Top Secret')
-
+                
+    # Post to screen and pause briefly
+    img.draw()
+    text.draw()    
+    win.flip()
+    time.sleep(.2)
+    
     # Animate (fade-out)
-    text.contrast = 1
+#    text.contrast = 1
     for i in np.array(range(100,-100,-2))/100.0:
         text.contrast = i
         img.draw()
@@ -476,7 +482,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=1; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -562,11 +568,15 @@ load_text = visual.TextStim(win=win,
                                wrapWidth = width,
                                antialias=True,
                                alignHoriz='center') 
-#                               fontFiles=['Top_Secret.ttf'],
-#                               font='Top Secret')
-                               
-load_text.draw()
-win.flip()
+#                               fontFiles=['Road_Rage.otf'],
+#                               font='Road Rage')
+
+# Animate (fade-out)
+for i in np.array(range(100,-100,-2))/100.0:
+    load_text.contrast = i
+    load_text.draw()    
+    win.flip()                               
+
                         
 ## Initialize devices    
 if EYE_TRACKER:
