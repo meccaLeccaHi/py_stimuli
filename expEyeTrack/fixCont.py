@@ -117,14 +117,14 @@ def instruct_screen( win ):
     animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
                            
-    fin_text = visual.TextStim(win=win, text="Press <Start> to continue",
+    fin_text = visual.TextStim(win=win, text="Press [Start] to continue",
                                pos = [0, -(height/2)+50],
                                height = 50,
                                wrapWidth = width,
                                antialias=True,
                                alignHoriz='center')
-#                               fontFiles=['Top_Secret.ttf'],
-#                               font='Top Secret')
+#                               fontFiles=['Road_Rage.otf'],
+#                                font='Road Rage')
     
     # Create background image                           
     img = visual.ImageStim(win=win,
@@ -215,7 +215,9 @@ def readySet( win ):
                                height=56,
                                bold=True,
                                antialias=True,
-                               text=str(i))
+                               text=str(i),
+                                fontFiles=['Digital.ttf'],
+                                font='DS-Digital')
     
         # Animate (fade-out)
         for i in np.array(range(100,-100,-2))/100.0:
