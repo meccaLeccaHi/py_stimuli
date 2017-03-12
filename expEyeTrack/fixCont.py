@@ -117,14 +117,13 @@ def instruct_screen( win ):
     animation_duration = 300  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
                            
-    fin_text = visual.TextStim(win=win, text="Press [Start] to continue",
+    fin_text = visual.TextStim(win=win, text="Press Start to continue",
                                pos = [0, -(height/2)+50],
-                               height = 50,
+                               height = 45,
                                wrapWidth = width,
                                antialias=True,
-                               alignHoriz='center')
-#                               fontFiles=['Road_Rage.otf'],
-#                                font='Road Rage')
+                               alignHoriz='center',
+                               font='Road Rage')
     
     # Create background image                           
     img = visual.ImageStim(win=win,
@@ -212,12 +211,13 @@ def readySet( win ):
         
         # Show count-down        
         text = visual.TextStim(win,
-                               height=56,
+                               height=100,
                                bold=True,
                                antialias=True,
                                text=str(i),
-                                fontFiles=['Digital.ttf'],
                                 font='DS-Digital')
+#                                fontFiles=['Digital.ttf'],
+
     
         # Animate (fade-out)
         for i in np.array(range(100,-100,-2))/100.0:
@@ -263,7 +263,6 @@ def segue( win ):
                                alignHoriz='center',
                                text=text_str,
                                antialias=True,
-                               fontFiles=['Top_Secret.ttf'],
                                font='Top Secret')
                 
     # Post to screen and pause briefly
@@ -380,7 +379,6 @@ def end_screen( win, beh_fig_name ):
                            wrapWidth = width,
                            pos = [0, -height/2.5],
                            antialias=True,
-                           fontFiles=['Top_Secret.ttf'],
                            font='Top Secret')  
                            
     img = visual.ImageStim(win=win,
@@ -569,8 +567,8 @@ load_text = visual.TextStim(win=win,
                                wrapWidth = width,
                                antialias=True,
                                alignHoriz='center', 
-                               fontFiles=['Road_Rage.otf'],
                                font='Road Rage')
+                               # fontFiles=['Road_Rage.otf'],
 
 # Animate (fade-in)
 for i in np.array(range(-100,100,2))/100.0:
