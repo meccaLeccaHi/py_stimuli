@@ -32,7 +32,7 @@ from plot_beh import plot_beh
 # Start screen function
 def start_screen( win ):
 
-    zoom_step = 40
+    zoom_step = 50
     
     start_img_fname = "start_screen.png"
     
@@ -502,7 +502,6 @@ if MUSIC:
         filesound.play()
         
 if JOYSTICK:
-    
     # Initialize joystick device - reload module, if necessary
     try:
         joy = xbox.Joystick()
@@ -567,12 +566,12 @@ load_text = visual.TextStim(win=win,
                                height = 50,
                                wrapWidth = width,
                                antialias=True,
-                               alignHoriz='center') 
-#                               fontFiles=['Road_Rage.otf'],
-#                               font='Road Rage')
+                               alignHoriz='center', 
+                               fontFiles=['Road_Rage.otf'],
+                               font='Road Rage')
 
-# Animate (fade-out)
-for i in np.array(range(100,-100,-2))/100.0:
+# Animate (fade-in)
+for i in np.array(range(-100,100,2))/100.0:
     load_text.contrast = i
     load_text.draw()    
     win.flip()                               
@@ -652,6 +651,12 @@ while break_exp==False:
     RESP_TIME = [None] * TRIAL_COUNT
     CORRECT = [None] * TRIAL_COUNT
     CORRECT[0] = 0 # Initialize with zero so the running average works at the beginning  
+    
+    # Animate (fade-out)
+    for i in np.array(range(100,-100,-4))/100.0:
+        load_text.contrast = i
+        load_text.draw()    
+        win.flip()
         
     # Define window objects
     if JOYSTICK:
