@@ -6,18 +6,11 @@ Created on Fri Feb 17 15:17:50 2017
 """
 
 import numpy as np
-#import matplotlib.pyplot as plt
-#import plotly.plotly as py
 from matplotlib import pyplot
 
 def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
     
-#    np.asarray(f_names)[np.where(STEP_LIST>3)]
-#    np.asarray(correct)[np.where(STEP_LIST>3)]
-    
-#    temp_correct = np.asarray(CORRECT)
-#    temp_correct[temp_correct==''] = None
-    
+    # Set line color, depending on behavior score
     if SCORE==0:
         barCol = 'blue'
     elif SCORE<=25:
@@ -27,6 +20,7 @@ def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
     else:
         barCol = 'green'
     
+    # Tally radial trajectory results
     foo = np.asarray(CORRECT)[np.where(STEP_LIST>3)]
     if any(foo>=0):
         rad_results = [np.mean(foo[foo>=0])]
@@ -35,7 +29,11 @@ def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
             rad_results.append(np.mean(foo[foo>=0]))
     else:
         rad_results = []
-         
+    
+    # Create vector for plotting
+    x1 = np.asarray(rad_results)*100
+    
+    # Tally tangential trajectory results
 #    np.asarray(f_names)[np.where((TRAJ_LIST==2)&(STEP_LIST==i))]
     tan_results = []
     for i in range(3):
@@ -48,26 +46,24 @@ def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
     if any(foo>=0):
         tan_results.append(np.mean(foo[foo>=0]))
     
-    x1 = np.asarray(rad_results)*100
+    # Create vector for plotting
     x2 = np.asarray(tan_results)*100
     
-#    pyplot.clf()
+    # Set up subplot number
     if rad_only:
         plot_num = 1
     else:
         plot_num = 2
     
-    #define plot size in inches (width, height) & resolution(DPI)
-    
-    
+    # Define plot size in inches (width, height) & resolution (DPI)
     if rad_only:
         pyplot.figure(figsize=(4.5, 4.5), dpi=100)
     else:
         pyplot.figure(figsize=(6, 4), dpi=100)
     
-
+    # Plot radial responses
     ax1 = pyplot.subplot(1,plot_num,1,axisbg='k')
-    x = np.asarray(range(len(x1)))/((len(x1)-1.0)/100)
+    x = np.asarray(range(len(x1)))/((len(x1)-1.0)/100) # X-axis labels
     pyplot.plot(x,np.tile(25.0,(1,len(x1)))[0],'--',color='grey',lw=2)
     if SCORE!=0:
        pyplot.plot(x,np.tile(int(SCORE),(1,len(x1)))[0],'--',color=barCol,lw=3.5) 
@@ -79,6 +75,7 @@ def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
     if rad_only==False:
         pyplot.title('Radial traj.')
     
+    # Set axes properties
     ax1.spines['top'].set_visible(False)
     ax1.spines['right'].set_visible(False)
     ax1.spines['bottom'].set_linewidth(0.5)
@@ -91,6 +88,7 @@ def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
     ax1.tick_params(axis='x', colors='white')
     ax1.tick_params(axis='y', colors='white')
     
+    # Plot tangential responses
     if rad_only==False:
             
         ax2 = pyplot.subplot(1,plot_num,2,axisbg='k')
@@ -104,6 +102,7 @@ def plot_beh(STEP_LIST, TRAJ_LIST, CORRECT,rad_only = False, SCORE = 0):
         pyplot.xlabel('% disguised')
         pyplot.title('Tang traj.')
     
+        # Set axes properties
         ax2.spines['top'].set_visible(False)
         ax2.spines['right'].set_visible(False)
         ax2.spines['bottom'].set_linewidth(0.5)
