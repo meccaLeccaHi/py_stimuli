@@ -1,6 +1,6 @@
-# py_stimuli
+# py_stimuli 
 
-####Python scripts for neuroscience/psychophysics experiments. 
+#### Python scripts for neuroscience/psychophysics experiments. 
 
 These scripts make use of the following toolboxes:
 ## - Experiment software:
