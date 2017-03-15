@@ -5,7 +5,7 @@ Created on Thu Feb 16 16:49:07 2017
 @author: root
 """
 
-def buttonDemo( win, joy, keyboard, side='L' ):
+def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
     
     from psychopy import visual # core, 
 #    from psychopy.iohub.client import launchHubServer
@@ -47,25 +47,23 @@ def buttonDemo( win, joy, keyboard, side='L' ):
     if side=='R':
         img_list_button = ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]
         img_list_cue = img_list_button
-        
-        # Create list of functions corresponding to each button used
-        cmd_list = (lambda:joy.Y(),
-                    lambda:joy.B(),
-                    lambda:joy.A(),
-                    lambda:joy.X())
+#        
+#        # Create list of functions corresponding to each button used
+#        cmd_list = (lambda:joy.Y(),
+#                    lambda:joy.B(),
+#                    lambda:joy.A(),
+#                    lambda:joy.X())
     else:
         img_list_button = [button_image]*4
         img_list_cue = [cue_image]*4
+#        
+#        # Create list of functions corresponding to each button used
+#        cmd_list = (lambda:joy.dpadUp(),
+#                    lambda:joy.dpadRight(),
+#                    lambda:joy.dpadDown(),
+#                    lambda:joy.dpadLeft()) 
         
-        # Create list of functions corresponding to each button used
-        cmd_list = (lambda:joy.dpadUp(),
-                    lambda:joy.dpadRight(),
-                    lambda:joy.dpadDown(),
-                    lambda:joy.dpadLeft()) 
-        
-    start_image = "xbox_start.png"
-    back_image = "xbox_back.png"
-    wait_img_list = [start_image, back_image] 
+    wait_img_list = ["xbox_start.png", "xbox_back.png"] 
         
     train_rep = 0
     
@@ -295,11 +293,11 @@ def buttonDemo( win, joy, keyboard, side='L' ):
                 else:
                     press_text.contrast = 1
                 
+                press_text.draw()    
                 cue_img.draw()
                 mov.draw()
                 instr_text.draw()
                 fin_text.draw()
-                press_text.draw()    
                 win.flip()
                 
                 # Check joystick and keyboard for button presses 

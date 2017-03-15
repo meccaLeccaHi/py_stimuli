@@ -34,7 +34,7 @@ def presents( win ):
  
     # Create text object       
     text_str = "Petkov/Howard Labs Present"
-    text = visual.TextStim(win, height = 45,
+    text = visual.TextStim(win, height = 55,
                                wrapWidth = width,
                                alignHoriz='center',
                                text=text_str,
@@ -89,11 +89,13 @@ def start_screen( win ):
         # Draw the image to window and show on screen
         start_img.draw()
         win.flip()
+        
+    print('zoom completed\n')
     
     # Wait on 'Start' button press
     while True:
         # Check devices for button presses
-        keys = keyboard.getPresses()
+        keys = keyboard.getPresses(clear=True)
         if joy.Start() or (' ' in keys):
             quit_game = False
             
@@ -117,6 +119,9 @@ def start_screen( win ):
             break
         
         elif joy.Back() or ('q' in keys):
+            
+            print('quit on back \n')
+
             quit_game = True
             
             # Stop music and break
@@ -133,7 +138,7 @@ def instruct_screen( win ):
     
     def start_break():
     # Break if 'start' or 'space' is pressed
-        if joy.Start() or (' ' in keyboard.getPresses()):
+        if joy.Start() or (' ' in keyboard.getPresses(clear=True)):
             instruct_play = False
             if MUSIC:
                 laserSound()
@@ -306,7 +311,6 @@ def poll_buttons( delay ):
     curr_time = time.time()
     resp = None
     resp_time = None
-    time_left = 0
     
     # Draw decision cue in window and post to screen
     dec_img.draw()
@@ -317,34 +321,31 @@ def poll_buttons( delay ):
     win.flip()
 
     while time.time()-curr_time < delay:
-        if cmd_list[0]():
-            resp = 0
-        elif cmd_list[1]():
-            resp = 1
-        elif cmd_list[2]():
-            resp = 2
-        elif cmd_list[3]():
-            resp = 3
-            
-        if resp!= None:
-            resp_time = time.time()-curr_time
-            time_left = delay - resp_time
-            
-            # Draw everything and post to screen
-            if resp==IDENT_LIST[trial_num]:
-                CORRECT[trial_num] = 1
-                right_img.draw()
-            else:
-                CORRECT[trial_num] = 0
-                wrong_img.draw()    
-            tr_text.draw()
-            tr_rect.draw()
-            prog_bar.draw()
-            corr_bar.draw()
-            win.flip()
+        
+        # Loop through response options and return index of non-zero value
+        for index, cmd in enumerate(cmd_list):
+            if cmd():
+                resp = index
                 
-            time.sleep(time_left)
-            break
+                # Get the latency of response
+                resp_time = time.time()-curr_time
+            
+                # Draw everything and post to screen
+                if resp==IDENT_LIST[trial_num]:
+                    CORRECT[trial_num] = 1
+                    right_img.draw()
+                else:
+                    CORRECT[trial_num] = 0
+                    wrong_img.draw()    
+                tr_text.draw()
+                tr_rect.draw()
+                prog_bar.draw()
+                corr_bar.draw()
+                win.flip()
+                
+                # Pause until delay time has passed
+                time.sleep(delay-resp_time)
+                break
     
     return resp, resp_time
 
@@ -425,12 +426,12 @@ def end_screen( win, beh_fig_name ):
         win.flip()
         
         # Check devices for button presses
-        keys = keyboard.getPresses()
+        keys = keyboard.getPresses(clear=True)
         if joy.Start() or (' ' in keys):       
             # Acknowledge button press with sound
             if MUSIC:
                 tyson_snd.stop()
-                laserSound()
+                yes_snd.play()
                 
             # Animate
             text.contrast = 1
@@ -505,10 +506,16 @@ EYE_TRACKER=0; # 1: yes, 0: no
 # Boolean to simulate tracker activity with mouse
 SIMULATE=1; # 1: yes, 0: no
 # Boolean for presence of joystick (N64 only, currently)
-JOYSTICK=1; # 1: yes, 0: no1
+JOYSTICK=0; # 1: yes, 0: no1
 # Boolean for intro music
 MUSIC=1; # 1: yes, 0: no
 
+# Prompt user for player name
+if TESTING==1:
+    user_name = "Agent Qwe"
+else:
+    user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
+    
 # Define fades
 fade_in = tuple(np.array(range(-100,100,2))/100.0)
 fade_out = tuple(np.array(range(100,-100,-2))/100.0)
@@ -517,28 +524,58 @@ if MUSIC:
     def laserSound():
         # Acknowledge button press with sound
         laser_snd.play()
-        
+
+## Initialize devices    
+if EYE_TRACKER:
+    # Set up eye-tracker configuration dict
+    iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
+    eyetracker_config = dict()
+    eyetracker_config['name'] = 'tracker'
+    if SIMULATE:
+        eyetracker_config['simulation_mode'] = True
+    else:
+        eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
+        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, 
+            track_eyes='RIGHT')
+
+    # Since no experiment or session code is given, no iohub hdf5 file
+    # will be saved, but device events are still available at runtime
+    io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
+    # Get iohub device for tracker
+    tracker = io.devices.tracker
+else:
+    io = launchHubServer()
+    
+# Get devices for future access
+keyboard = io.devices.keyboard
+
+# Set parallel port address
+#port = parallel.ParallelPort(address=0x0378)
+
+# Initialize joystick device - reload module, if necessary
+try:
+    joy = xbox.Joystick()
+except:
+    import xbox
+    joy = xbox.Joystick()
+
+# Create list of functions corresponding to each button used        
 if JOYSTICK:
-    # Initialize joystick device - reload module, if necessary
-    try:
-        joy = xbox.Joystick()
-    except:
-        import xbox
-        joy = xbox.Joystick()
-        
     if SIDE=='R':
-        # Create list of functions corresponding to each button used
         cmd_list = [lambda:joy.Y(),
                     lambda:joy.B(),
                     lambda:joy.A(),
                     lambda:joy.X()]
     else:
-        # Create list of functions corresponding to each button used
         cmd_list = [lambda:joy.dpadUp(),
                     lambda:joy.dpadRight(),
                     lambda:joy.dpadDown(),
                     lambda:joy.dpadLeft()] 
-
+#else:
+#    cmd_list = [lambda:int('up' in keyboard.getPresses(clear=True)),
+#                lambda:int('right' in keyboard.getPresses(clear=True)),
+#                lambda:int('down' in keyboard.getPresses(clear=True)),
+#                lambda:int('left' in keyboard.getPresses(clear=True))] 
     
 # Include/remove noise controls
 if CONTROLS==0:
@@ -563,14 +600,8 @@ PHOTO_SIZE = 50
 # Pixels must be integers
 PHOTO_POS = tuple(np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1]))
 
-# Prompt user for player name
-if TESTING==1:
-    user_name = "Agent Qwe"
-else:
-    user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
-
 ## Create window
-win = visual.Window(SCREEN_SIZE.tolist(),
+win = visual.Window(tuple(SCREEN_SIZE),
                     units='pix',
                     fullscr=FLSCRN,
                     allowGUI=False,
@@ -597,6 +628,9 @@ if MUSIC:
     laser_snd = sound.Sound(value = "laser.wav") # For 'start' button press sound
     laser_snd.setVolume(SND_VOL*2)
 
+    yes_snd = sound.Sound(value = "yes.wav") # 'Yes' sound effect
+    yes_snd.setVolume(SND_VOL*2)    
+    
     theme_snd = sound.Sound(value = "theme.wav") # Start-screen music
     theme_snd.setVolume(SND_VOL)             
     
@@ -626,35 +660,6 @@ start_img = visual.ImageStim(win=win,image="start_screen_scl.png",units="pix")
 instr_img = visual.ImageStim(win=win,image="instructions.png",units="pix")
 guitar_img = visual.ImageStim(win=win,image="guitar.png",units="pix")
               
-## Initialize devices    
-if EYE_TRACKER:
-    # Set up eye-tracker configuration dict
-    iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
-    eyetracker_config = dict()
-    eyetracker_config['name'] = 'tracker'
-    if SIMULATE:
-        eyetracker_config['simulation_mode'] = True
-    else:
-        eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
-        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, 
-            track_eyes='RIGHT')
-
-    # Since no experiment or session code is given, no iohub hdf5 file
-    # will be saved, but device events are still available at runtime
-    io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
-    # Get iohub device for tracker
-    tracker = io.devices.tracker
-else:
-    io = launchHubServer()
-    
-# Get devices for future access
-keyboard = io.devices.keyboard
-#port = parallel.ParallelPort(address=0x0378)
-    
-if EYE_TRACKER:
-    # Run eyetracker calibration
-    r = tracker.runSetupProcedure()
-
 while quit_game==False:
     
     # Set header path and file name (according to current time)
@@ -704,30 +709,33 @@ while quit_game==False:
         load_text.contrast = i
         load_text.draw()    
         win.flip()
+        
+    if EYE_TRACKER:
+        # Run eyetracker calibration
+        r = tracker.runSetupProcedure()
     
     # Show credits 
     if play_reps==0:
         presents(win)
         
     # Define window objects
-    if JOYSTICK:
-        
-        if play_reps==0:
-            # Display start screen and wait for user to press 'Start'
-            quit_game = start_screen(win)
-        play_reps += 1
-        
-        if quit_game:
-            break
+    if play_reps==0:
+        # Display start screen and wait for user to press 'Start'
+        quit_game = start_screen(win)
+    play_reps += 1
+    
+    if quit_game:
+        break
 
-        # Show 'incoming message...' animation
-        segue(win)
-               
-        # Display instruction screen, then wait for user to press 'Start'
-        instruct_screen(win)
-        
+    # Show 'incoming message...' animation
+    segue(win)
+           
+    # Display instruction screen, then wait for user to press 'Start'
+    instruct_screen(win)
+    
+    if JOYSTICK:
         # Display demonstration of identities and corresponding dpad directions
-        buttonDemo(win,joy,keyboard,SIDE)
+        buttonDemo(win,joy,keyboard,cmd_list,SIDE)
         
     # Countdown to start
     readySet(win)
@@ -745,8 +753,7 @@ while quit_game==False:
                                       color='green',
                                       units='pix')
     # Set up feedback bar
-    if JOYSTICK:
-        prog_bar = visual.Rect(win=win,
+    prog_bar = visual.Rect(win=win,
                                width=75,
                                height=height,
                                pos=[-(width/2),0],
@@ -763,7 +770,6 @@ while quit_game==False:
         
     ## Launch experiment                                 
     globalClock = core.Clock()  # to track the time since experiment started
-    buttonDemo
     
     # Run Trials.....
     for trial_num in range(TRIAL_COUNT):
@@ -772,33 +778,35 @@ while quit_game==False:
         average = int(np.mean([x for x in CORRECT if x is not None])*100)   
         ave_str = str(average)
         
-        if JOYSTICK:
-            # Set color of '% correct bar'
-            corr_move = height*((average-100)/100.0)
-            if average<=25:
-                barCol = 'red'
-            elif average<=50:
-                barCol='yellow'
-            else:
-                barCol='green'
-            # Create '% correct bar'
-            corr_bar = visual.Rect(win=win,
-                                   width=75,
-                                   height=height,
-                                   pos=[-(width/2),0+corr_move], fillColor=barCol, lineColor=barCol)
-                                                  
+        # Set color of '% correct bar'
+        corr_move = height*((average-100)/100.0)
+        if average<=25:
+            barCol = 'red'
+        elif average<=50:
+            barCol='yellow'
+        else:
+            barCol='green'
+            
+        # Create '% correct bar'
+        corr_bar = visual.Rect(win=win,
+                               width=75,
+                               height=height,
+                               pos=[-(width/2),0+corr_move], fillColor=barCol, lineColor=barCol)
+        
+        # Create trial counter text object                                      
         tr_text = visual.TextStim(win,
                                   text=(str(trial_num+1)),
                                   antialias=True)
+        tr_text.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]     
+                                  
+        # Create bounding box object for trial counter border
         tr_rect = visual.Rect(win,
                               width=tr_text.boundingBox[0],
                               height=tr_text.boundingBox[1])
-        tr_text.pos = [(width/2)-tr_text.boundingBox[0],(height/2)-tr_text.boundingBox[1]]     
         tr_rect.pos = tr_text.pos      
                   
         # Create movie stim by loading movie from list
-        mov = visual.MovieStim3(win,
-                                videolist[trial_num]) 
+        mov = visual.MovieStim3(win,videolist[trial_num]) 
         
 #        io.clearEvents()
         if EYE_TRACKER:
@@ -808,7 +816,7 @@ while quit_game==False:
         SCR_OPEN[trial_num] = core.getTime()
             
         # Start the movie stim by preparing it to play
-        shouldflip = mov.play()
+        mov.play()
             
         # If boolean to finish current movie AND movie has not finished yet
         while mov.status != visual.FINISHED:
@@ -834,7 +842,7 @@ while quit_game==False:
                     gaze_in_region = 'Yes'
                             
                     # Draw movie stim again
-                    shouldflip = mov.draw()
+                    mov.draw()
                     
                     # Draw photodiode patch
                     photodiode.draw()
@@ -854,9 +862,8 @@ while quit_game==False:
                 gaze_ok_region.draw()
             tr_text.draw()
             tr_rect.draw()
-            if JOYSTICK:
-                prog_bar.draw()
-                corr_bar.draw()
+            prog_bar.draw()
+            corr_bar.draw()
             
             if valid_gaze_pos:
                 if EYE_TRACKER:
@@ -865,9 +872,20 @@ while quit_game==False:
             # Display updated stim on screen
             flip_time = win.flip()
             
-            # Check any new keyboard char events for a 'q' key
-            # If one is found, set the experiment break boolean
-            if joy.Back() or ('q' in keyboard.getPresses()):
+            # Pause or quit, if prompted
+            # Check any new keyboard char events
+            keys = keyboard.getPresses(clear=True)
+            # Check for 'start' or 'space' button presses
+            if joy.Start() or (' ' in keys):
+                mov.pause() # Pause movie
+                
+                while True:
+                    # Check for 'start' or 'space' button presses
+                    if joy.Start() or (' ' in keyboard.getPresses(clear=True)):
+                        mov.play() # Resume movie
+            # Check for 'back' or 'q' button presses            
+            elif joy.Back() or ('q' in keys):
+                # Quit game
                 quit_game = True
                 break
         
@@ -882,9 +900,8 @@ while quit_game==False:
             gaze_ok_region.draw()
         tr_text.draw()
         tr_rect.draw()
-        if JOYSTICK:
-            prog_bar.draw()
-            corr_bar.draw()
+        prog_bar.draw()
+        corr_bar.draw()
         
         # Display updated stim on screen
         flip_time = win.flip(clearBuffer=True)
@@ -896,19 +913,17 @@ while quit_game==False:
             # Stop eye data recording
             tracker.setRecordingState(False)
          
-        # Check joystick for button presses
         if JOYSTICK:
-            
             # Poll joystick for X seconds
             RESP[trial_num], RESP_TIME[trial_num] = poll_buttons(DEC_WIN)
+        else:
+            time.sleep(DEC_WIN)
         
-        # Pause for n seconds
+        # Pause for x seconds
         tr_text.draw()
         tr_rect.draw()
-        if JOYSTICK:
-            prog_bar.draw()
-            corr_bar.draw()
-#        win.flip(clearBuffer=True)
+        prog_bar.draw()
+        corr_bar.draw()
         time.sleep(ISI + jitter_times[trial_num])
             
         # Log ISI end time for header
