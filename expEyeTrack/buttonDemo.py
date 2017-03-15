@@ -49,19 +49,19 @@ def buttonDemo( win, joy, keyboard, side='L' ):
         img_list_cue = img_list_button
         
         # Create list of functions corresponding to each button used
-        cmd_list = [lambda:joy.Y(),
+        cmd_list = (lambda:joy.Y(),
                     lambda:joy.B(),
                     lambda:joy.A(),
-                    lambda:joy.X()]
+                    lambda:joy.X())
     else:
         img_list_button = [button_image]*4
         img_list_cue = [cue_image]*4
         
         # Create list of functions corresponding to each button used
-        cmd_list = [lambda:joy.dpadUp(),
+        cmd_list = (lambda:joy.dpadUp(),
                     lambda:joy.dpadRight(),
                     lambda:joy.dpadDown(),
-                    lambda:joy.dpadLeft()] 
+                    lambda:joy.dpadLeft()) 
         
     start_image = "xbox_start.png"
     back_image = "xbox_back.png"
@@ -79,10 +79,9 @@ def buttonDemo( win, joy, keyboard, side='L' ):
     dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",units="pix")
     
     # Create vector of log-distributed values for fade effect                           
-    OldRange = (1.0 - 0)  
     NewRange = (1.0 - -1.0)  
     logDist = (np.logspace(0, 1.0, 100, endpoint=True) / 10)
-    scaled_logDist = (((logDist * NewRange) / OldRange) + -1.0)*-1
+    scaled_logDist = tuple(((logDist * NewRange) + -1.0)*-1)
         
     while repeat_demo:
         

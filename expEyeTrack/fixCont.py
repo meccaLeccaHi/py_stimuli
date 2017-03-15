@@ -460,7 +460,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=0; # 1: yes, 0: no
+TESTING=1; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -473,8 +473,8 @@ JOYSTICK=1; # 1: yes, 0: no1
 MUSIC=1; # 1: yes, 0: no
 
 # Define fades
-fade_in = np.array(range(-100,100,2))/100.0
-fade_out = np.array(range(100,-100,-2))/100.0
+fade_in = tuple(np.array(range(-100,100,2))/100.0)
+fade_out = tuple(np.array(range(100,-100,-2))/100.0)
 
 if MUSIC:
     def laserSound():
@@ -524,7 +524,7 @@ else:
 # Set up photodiode
 PHOTO_SIZE = 50
 # Pixels must be integers
-PHOTO_POS = np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1])
+PHOTO_POS = tuple(np.floor((SCREEN_SIZE - PHOTO_SIZE)/2 * [1, -1]))
 
 # Prompt user for player name
 if TESTING==1:
@@ -624,26 +624,28 @@ while quit_game==False:
     new_order = np.concatenate(perm_list)
         
     # Re-order (and grow, if necessary) stimulus list
-    videolist = [ videolist[i] for i in new_order ]
+    videolist = tuple([ videolist[i] for i in new_order ])
 
     # Extract identity numbers from video list
     ident_ind = videolist[0].rfind('/')+len("identity")+1
+    
+    # Get trajectory (radial v. tangential) from video list    
+    TRAJ_LIST = (np.unique([x[ident_ind+1:ident_ind+4] for x in videolist],return_inverse = True)[1])
+
+    # Get position along trajectory (identity level) from video list        
+    STEP_LIST = (np.unique([x[ident_ind+5:ident_ind+8] for x in videolist],return_inverse = True)[1])
+    
     # ident_ind = videolist[0].find("identity")+len("identity")
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
     
-    # Get trajectory (radial v. tangential) from video list    
-    TRAJ_LIST = np.unique([x[ident_ind+1:ident_ind+4] for x in videolist],return_inverse = True)[1]
-
-    # Get position along trajectory (identity level) from video list        
-    STEP_LIST = np.unique([x[ident_ind+5:ident_ind+8] for x in videolist],return_inverse = True)[1]
-
     # Assign identity # for faces more than 50% along tang. trajectory to opposing identity
     temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] + 1
     temp1[temp1==max(temp1)] = 0
     IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] = temp1
+    IDENT_LIST = (IDENT_LIST)
     
     # Create jitter times (uniformly distributed)
-    jitter_times = np.random.uniform(-JITTER, JITTER, TRIAL_COUNT)
+    jitter_times = tuple(np.random.uniform(-JITTER, JITTER, TRIAL_COUNT))
     
     # Pre-allocate timing lists
     SCR_OPEN = [None] * TRIAL_COUNT
@@ -710,7 +712,7 @@ while quit_game==False:
     photodiode = visual.GratingStim(win,
                                     tex=None,
                                     mask='none',
-                                    pos=PHOTO_POS.tolist(),
+                                    pos=PHOTO_POS,
                                     size=100)
                                     
         
