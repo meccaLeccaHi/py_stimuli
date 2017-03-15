@@ -2,7 +2,9 @@
 
 #### Python scripts for neuroscience/psychophysics experiments. 
 
-[![Video demo on YouTube](https://i.ytimg.com/vi/4yBVK9NiLnI/hqdefault.jpg)](https://youtu.be/4yBVK9NiLnI)
+![alt text](https://i.ytimg.com/vi/4yBVK9NiLnI/hqdefault.jpg "'Laser Morph' screen grab")
+
+[Video demo on YouTube](https://youtu.be/4yBVK9NiLnI)
 
 These scripts make use of the following toolboxes:
 ## - Experiment software:
