@@ -29,6 +29,80 @@ import numpy as np
 from buttonDemo import buttonDemo
 from plot_beh import plot_beh
 
+# Show credits
+def presents( win ):
+ 
+    # Create text object       
+    text_str = "Petkov/Howard Labs Present"
+    text = visual.TextStim(win, height = 45,
+                               wrapWidth = width,
+                               alignHoriz='center',
+                               text=text_str,
+                               antialias=True,
+                               font='Impact Label Reversed')
+                                                    
+    # Animate background (fade-in)
+    for i in fade_in[::4]:
+        guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
+        guitar_img.draw()
+        text.contrast = i
+        text.draw()
+        win.flip()
+                
+    # Play sound
+    if MUSIC:
+            guitar_snd.play()
+     
+    # Pause briefly       
+    time.sleep(.2)
+    
+    # Animate (fade-out)
+    for i in fade_out[::4]:
+        guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
+        guitar_img.draw()
+        text.contrast = i
+        text.draw()    
+        win.flip()
+    
+    time.sleep(.25)
+
+# Show credits
+def presents( win ):
+ 
+    # Create text object       
+    text_str = "Petkov/Howard Labs Present"
+    text = visual.TextStim(win, height = 45,
+                               wrapWidth = width,
+                               alignHoriz='center',
+                               text=text_str,
+                               antialias=True,
+                               font='Impact Label Reversed')
+                                                    
+    # Animate background (fade-in)
+    for i in fade_in[::4]:
+        guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
+        guitar_img.draw()
+        text.contrast = i
+        text.draw()
+        win.flip()
+                
+    # Play sound
+    if MUSIC:
+            guitar_snd.play()
+     
+    # Pause briefly       
+    time.sleep(.2)
+    
+    # Animate (fade-out)
+    for i in fade_out[::4]:
+        guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
+        guitar_img.draw()
+        text.contrast = i
+        text.draw()    
+        win.flip()
+    
+    time.sleep(.25)
+
 # Start screen function
 def start_screen( win ):
 
@@ -460,7 +534,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=1; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -554,7 +628,7 @@ for i in fade_in:
     load_text.contrast = i
     load_text.draw()    
     win.flip()
-
+    
 # Load sounds (and set volumes)                             
 if MUSIC:
     laser_snd = sound.Sound(value = "laser.wav") # For 'start' button press sound
@@ -568,12 +642,15 @@ if MUSIC:
                   
     mission_snd = sound.Sound(value = "mission-briefing.wav") # Instruction-screen music
     mission_snd.setVolume(SND_VOL)
-
+        
     beep_snd = sound.Sound(value="beep.wav")
     beep_snd.setVolume(SND_VOL)       
 
     morse_snd = sound.Sound(value = "morse.wav")
     morse_snd.setVolume(SND_VOL)
+    
+    guitar_snd = sound.Sound(value = "guitar.wav")
+    guitar_snd.setVolume(SND_VOL)
 
 # Load images (and set scales)
 # Instruction-screen background image                           
@@ -584,6 +661,7 @@ wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
 # Image (scaled to 2**10X2**10)                                          
 start_img = visual.ImageStim(win=win,image="start_screen_scl.png",units="pix")
 instr_img = visual.ImageStim(win=win,image="instructions.png",units="pix")
+guitar_img = visual.ImageStim(win=win,image="guitar.png",units="pix")
               
 ## Initialize devices    
 if EYE_TRACKER:
@@ -605,7 +683,7 @@ if EYE_TRACKER:
     tracker = io.devices.tracker
 else:
     io = launchHubServer()
-
+    
 # Get devices for future access
 keyboard = io.devices.keyboard
 #port = parallel.ParallelPort(address=0x0378)
@@ -625,7 +703,7 @@ while quit_game==False:
         
     # Re-order (and grow, if necessary) stimulus list
     videolist = tuple([ videolist[i] for i in new_order ])
-
+    
     # Extract identity numbers from video list
     ident_ind = videolist[0].rfind('/')+len("identity")+1
     
@@ -643,7 +721,7 @@ while quit_game==False:
     temp1[temp1==max(temp1)] = 0
     IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] = temp1
     IDENT_LIST = (IDENT_LIST)
-    
+        
     # Create jitter times (uniformly distributed)
     jitter_times = tuple(np.random.uniform(-JITTER, JITTER, TRIAL_COUNT))
     
@@ -657,12 +735,16 @@ while quit_game==False:
     RESP_TIME = [None] * TRIAL_COUNT
     CORRECT = [None] * TRIAL_COUNT
     CORRECT[0] = 0 # Initialize with zero so the running average works at the beginning  
-    
-    # Animate (fade-out)
+        
+    # Animate load-screen (fade-out)
     for i in fade_out[::2]:
         load_text.contrast = i
         load_text.draw()    
         win.flip()
+    
+    # Show credits 
+    if play_reps==0:
+        presents(win)
         
     # Define window objects
     if JOYSTICK:
