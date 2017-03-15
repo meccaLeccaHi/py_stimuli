@@ -5,7 +5,7 @@ Created on Thu Feb 16 16:49:07 2017
 @author: root
 """
 
-def buttonDemo( win, joystick, keyboard, side='L' ):
+def buttonDemo( win, joy, keyboard, side='L' ):
     
     from psychopy import visual # core, 
 #    from psychopy.iohub.client import launchHubServer
@@ -49,19 +49,19 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
         img_list_cue = img_list_button
         
         # Create list of functions corresponding to each button used
-        cmd_list = [lambda:joystick.Y(),
-                    lambda:joystick.B(),
-                    lambda:joystick.A(),
-                    lambda:joystick.X()]
+        cmd_list = [lambda:joy.Y(),
+                    lambda:joy.B(),
+                    lambda:joy.A(),
+                    lambda:joy.X()]
     else:
         img_list_button = [button_image]*4
         img_list_cue = [cue_image]*4
         
         # Create list of functions corresponding to each button used
-        cmd_list = [lambda:joystick.dpadUp(),
-                    lambda:joystick.dpadRight(),
-                    lambda:joystick.dpadDown(),
-                    lambda:joystick.dpadLeft()] 
+        cmd_list = [lambda:joy.dpadUp(),
+                    lambda:joy.dpadRight(),
+                    lambda:joy.dpadDown(),
+                    lambda:joy.dpadLeft()] 
         
     start_image = "xbox_start.png"
     back_image = "xbox_back.png"
@@ -74,15 +74,9 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
     repeat_demo = True
     
     # Load images
-    warn_img = visual.ImageStim(win=win, image="training_mode.png",
-                                units="pix")
-#    warn_img.size *= .75  # Scale the image relative to initial size
-    
-    dec_img = visual.ImageStim(win=win,image="decision.png",
-                               units="pix")
-#    dec_img.size *= .75  # Scale the image relative to initial size
-    dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",
-                               units="pix")
+    warn_img = visual.ImageStim(win=win, image="training_mode.png",units="pix")
+    dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
+    dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",units="pix")
     
     # Create vector of log-distributed values for fade effect                           
     OldRange = (1.0 - 0)  
@@ -120,12 +114,12 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                          
         # Show warning and animate fade
         if train_rep==0:
-            warn_img.contrast = 1
-            for i in 1-(np.logspace(0.0, 1.0, 200) / 10):
-                warn_img.contrast = i 
-                warn_img.draw()    
-                win.flip()
-        
+            # Animate (fade-in, hold, and fade-out)
+            for i in np.array(range(-100,100,15)+[100]*10+range(100,-100,-20))/100.0:
+                    warn_img.mask = np.ones((2**10,2**10), np.uint8)*i
+                    warn_img.draw()
+                    win.flip()
+
         # Show 1st block of instructions        
         text = visual.TextStim(win,height=48,
                                    text="When you see this sign...",
@@ -137,7 +131,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
         cont_out = 1.0  
         curr_time = time.time()
         
-        while time.time()-curr_time < 3:
+        while (time.time()-curr_time) < 3:
         
             # Oscillate img contrast
             cont_out = cont_out + cont_step
@@ -152,7 +146,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             win.flip()
         
             # Break if 'start' or 'space' is pressed
-            if joystick.Start() or (' ' in keyboard.getPresses()):
+            if joy.Start() or (' ' in keyboard.getPresses()):
                 vid_play = False
                 repeat_demo = False
                 
@@ -173,7 +167,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             win.flip()
             
             # Break if 'start' or 'space' is pressed   
-            if joystick.Start() or (' ' in keyboard.getPresses()):
+            if joy.Start() or (' ' in keyboard.getPresses()):
                 vid_play = False
                 repeat_demo = False
                 
@@ -200,7 +194,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             # Check keyboard for button presses
             keys = keyboard.getPresses()
             # Check joystick for button presses    
-            if joystick.Start() or (' ' in keys):
+            if joy.Start() or (' ' in keys):
                 vid_play = False
                 repeat_demo = False
                 
@@ -221,7 +215,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             # Check keyboard for button presses
             keys = keyboard.getPresses()
             # Check joystick for button presses    
-            if joystick.Start() or (' ' in keys):
+            if joy.Start() or (' ' in keys):
                 vid_play = False
                 repeat_demo = False
                 
@@ -242,7 +236,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 img.size *= .45  # Scale the image relative to initial size
             else:
                 img.size -= img.size/4  # Scale the image relative to initial size
-                img.ori += 90*i
+                img.ori += 90*i # Iterate image orientation (rotation)
 
             if side=='R':
                 cue_img = img
@@ -251,7 +245,7 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                                            image=img_list_cue[i],
                                             units="pix")
                 cue_img.size -= cue_img.size/4  # Scale the image relative to initial size
-                cue_img.ori += 90*i
+                cue_img.ori += 90*i # Iterate image orientation (rotation)
             
             # Create movie stim by loading movie from list
             mov = visual.MovieStim3(win, videolist[i]) 
@@ -273,10 +267,8 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 # Display updated stim on screen
                 win.flip()
                 
-                # Check keyboard for button presses
-                keys = keyboard.getPresses()
-                # Check joystick for button presses    
-                if joystick.Start() or (' ' in keys):
+                # Check joystick and keyboard for button presses    
+                if joy.Start() or (' ' in keyboard.getPresses()):
                     mov.status = visual.FINISHED
                     vid_play = False
                     repeat_demo = False
@@ -310,31 +302,26 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
                 fin_text.draw()
                 press_text.draw()    
                 win.flip()
-                 
-                if joystick.Start() or (' ' in keys):
+                
+                # Check joystick and keyboard for button presses 
+                if joy.Start() or (' ' in keyboard.getPresses()):
                     vid_play = False
                     
                     # Acknowledge button press with sound
                     laserSound()
                 
                     break
-            
-#            # Iterate image orientation (rotation)
-#            img.ori += 90.0
-#            cue_img.ori += 90.0
-            
+                        
             ## If trial break variable is set, break trial
             if vid_play==False:
                 break
                 
             # Current Trial is Done
-            # Pause for 1 sec (while checking for button presses)    
+            # Wait on button presses
             t_start = time.time()+1
             while time.time()<t_start:
-                # Check keyboard for button presses
-                keys = keyboard.getPresses()
-                # Check joystick for button presses    
-                if joystick.Start() or (' ' in keys):
+                # Check joystick and keyboard for button presses    
+                if joy.Start() or (' ' in keyboard.getPresses()):
                         vid_play = False
                         
                         # Acknowledge button press with sound
@@ -381,10 +368,11 @@ def buttonDemo( win, joystick, keyboard, side='L' ):
             wait_img.draw()
             
             win.flip()
-                                   
-            if joystick.Back():
+             
+            # Check joystick and keyboard for button presses                      
+            if joy.Back():
                 break
-            elif joystick.Start():
+            elif joy.Start() or (' ' in keyboard.getPresses()):
                 repeat_demo = False
                 
                 # Acknowledge button press with sound

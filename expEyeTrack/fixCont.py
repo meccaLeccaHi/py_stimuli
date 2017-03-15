@@ -33,24 +33,13 @@ from plot_beh import plot_beh
 def start_screen( win ):
 
     zoom_step = 50
-    
-    start_img_fname = "start_screen.png"
-    
+      
     # Get image dimensions for mask
-    im = cv2.imread(start_img_fname)
-    height,width,depth = im.shape
-    
-    # Create image object                           
-    img = visual.ImageStim(win=win,
-                           image=start_img_fname,
-                           units="pix")
-#    img.size *= SCALE  # scale the image relative to initial size
-                         
+    height,width = start_img._origSize
+               
     # Play music
     if MUSIC:
-        filesound = sound.Sound(value = "theme.wav")
-        filesound.setVolume(SND_VOL)
-        filesound.play() 
+        theme_snd.play() 
     
     # Zoom effect (open)    
     for i in range(1,int(width/2),zoom_step):
@@ -58,43 +47,47 @@ def start_screen( win ):
         # Create mask        
         circle_img = np.ones((height,width), np.uint8)*-1
         cv2.circle(circle_img,(int(width/2),int(height/2)),i,1,thickness=-1)
-        img.setMask(circle_img)
+        start_img.setMask(circle_img)
     
         # Draw the image to window and show on screen
-        img.draw()
+        start_img.draw()
         win.flip()
     
     # Wait on 'Start' button press
     while True:
-        if joy.Start():
-            break_exp = False
+        # Check devices for button presses
+        keys = keyboard.getPresses()
+        if joy.Start() or (' ' in keys):
+            quit_game = False
             
             # Acknowledge button press with sound
             if MUSIC:
-                filesound.stop()
+                theme_snd.stop()
                 laserSound()
                 
             # Zoom effect (close)
             for i in range(int(width/2),1,-zoom_step*2):
+                
+                # Create mask
                 circle_img = np.ones((height,width), np.uint8)*-1
                 cv2.circle(circle_img,(int(width/2),int(height/2)),i,1,thickness=-1)
-                img.setMask(circle_img)
+                start_img.setMask(circle_img)
             
                 # Draw the image to window and show on screen
-                img.draw()
+                start_img.draw()
                 win.flip()
             
             break
         
-        elif joy.Back() or ('q' in keyboard.getPresses()):
-            break_exp = True
+        elif joy.Back() or ('q' in keys):
+            quit_game = True
             
             # Stop music and break
             if MUSIC:
-                filesound.stop()        
+                theme_snd.stop()        
             break
         
-    return break_exp
+    return quit_game
         
 # Give subject instructions
 def instruct_screen( win ):
@@ -113,21 +106,15 @@ def instruct_screen( win ):
                 
     # Play music
     if MUSIC:
-        filesound = sound.Sound(value = "mission-briefing.wav")
-        filesound.setVolume(SND_VOL)
-        filesound.play()
-        
-    instr_img = visual.ImageStim(win=win,
-                                 image="instructions.png",
-                                 units="pix")
-    #    img.size *= SCALE  # scale the image relative to initial size
+        mission_snd.play()
     
     start_pos = np.array([0, -height/3])  # [x, y] norm units in this case where TextSTim inherits 'units' from the Window, which has 'norm' as default.
     end_pos = np.array([0, -height/20.0])
-    animation_duration = 300  # duration in number of frames
+    animation_duration = 400  # duration in number of frames
     step_pos = (end_pos - start_pos)/animation_duration
-                           
-    fin_text = visual.TextStim(win=win, text="Press Start to continue",
+    
+    # Create text object                       
+    instrFin_text = visual.TextStim(win=win, text="Press Start to continue",
                                pos = [0, -(height/2)+50],
                                height = 45,
                                wrapWidth = width,
@@ -135,44 +122,36 @@ def instruct_screen( win ):
                                alignHoriz='center',
                                font='Road Rage')
     
-    # Create background image                           
-    img = visual.ImageStim(win=win,
-                           image="stars.jpg",
-                           units="pix")
-#    img.size *= SCALE  # scale the image relative to initial size
-    
-    
+    # Set initial position of instruction-text image
     instr_img.pos = start_pos
     
     # Animate (fade-in)
-    for i in np.array(range(-100,100,10))/100.0:
-        instr_img.contrast = i 
-        instr_img.draw()
-        win.flip()
-        
-        # Skip if 'start' or space bar are pressed
-        instruct_play = start_break()
-#        if joy.Start() or (' ' in keyboard.getPresses()):
-#            instruct_play = False
-#            if MUSIC:
-#                laserSound()
-#            break
+    for i in fade_in[::6]:
+        if (instruct_play):
+            back_img.draw()
+            instr_img.mask = np.ones((2**10,2**10), np.uint8)*i
+            instr_img.draw()
+            win.flip()
+            
+            # Check if 'start' or space bar are pressed
+            instruct_play = start_break()
+        else:
+            break
     
-    # Animate
+    # Animate (scroll text vertically)
     for i in range(animation_duration):
-        instr_img.pos += step_pos  # Add to existing value
-        # Draw images to window and show on screen
-        img.draw()
-        instr_img.draw()
-        win.flip()
-        
-        # Skip if 'start' or space bar are pressed
-        instruct_play = start_break()
-#        if joy.Start() or (' ' in keyboard.getPresses()):
-#            instruct_play = False
-#            if MUSIC:
-#                laserSound()
-#            break
+        if (instruct_play):
+            instr_img.pos += step_pos  # Add to existing value
+            
+            # Draw images to window and show on screen
+            back_img.draw()
+            instr_img.draw()
+            win.flip()
+            
+            # Check if 'start' or space bar are pressed
+            instruct_play = start_break()
+        else:
+            break
     
     cont_step = -.1
     cont_out = 1.0  
@@ -184,32 +163,23 @@ def instruct_screen( win ):
         cont_out = cont_out + cont_step
         if (cont_out<-.9) or (cont_out>.9):
             cont_step *= -1
-        fin_text.contrast = cont_out
+        instrFin_text.contrast = cont_out
 
         # Draw everything to the screen and post
-        img.draw()
+        back_img.draw()
         instr_img.draw()
-        fin_text.draw()
+        instrFin_text.draw()
         time.sleep(.01)
         win.flip()
         
         # Break if 'start' or 'space' is pressed
         instruct_play = start_break()
-#        if joy.Start() or (' ' in keyboard.getPresses()):
-#            instruct_play = False
-#            if MUSIC:
-#                laserSound()
-#            break
 
     # Stop music
     if MUSIC:
-        filesound.stop()
+        mission_snd.stop()
                 
 def readySet( win ):
-    
-    if MUSIC:
-            filesound = sound.Sound(value="beep.wav")
-            filesound.setVolume(SND_VOL)
             
     # Show "Mission starting in:"
     text_start = visual.TextStim(win=win,
@@ -219,7 +189,7 @@ def readySet( win ):
                                  text="Mission starting in:")
     
     # Animate (fade-in)
-    for i in np.array(range(-100,100,10))/100.0:
+    for i in fade_in[::4]:
         text_start.contrast = i 
         text_start.draw()
         win.flip()
@@ -228,7 +198,7 @@ def readySet( win ):
         
         # Play sound
         if MUSIC:   
-            filesound.play()
+            beep_snd.play()
         
         # Show count-down        
         text = visual.TextStim(win,
@@ -237,11 +207,9 @@ def readySet( win ):
                                antialias=True,
                                text=str(i),
                                 font='DS-Digital')
-#                                fontFiles=['Digital.ttf'],
-
     
         # Animate (fade-out)
-        for i in np.array(range(100,-100,-2))/100.0:
+        for i in fade_out:
             text.contrast = i 
             text_start.draw()
             text.draw()    
@@ -259,23 +227,16 @@ def readySet( win ):
     time.sleep(.25)
     
 def segue( win ):
-             
-    # Load background image
-    img = visual.ImageStim(win=win,
-                           image="stars.jpg",
-                           units="pix")
                           
     # Animate background (fade-in)
-    for i in np.array(range(-100,100,10))/100.0:
-        img.mask = np.ones((height,width), np.uint8)*i
-        img.draw()
+    for i in fade_in[::4]:
+        back_img.mask = np.ones((2**10,2**10), np.uint8)*i
+        back_img.draw()
         win.flip()
         
     # Play sound
     if MUSIC:
-            filesound = sound.Sound(value = "morse.wav")
-            filesound.setVolume(SND_VOL)
-            filesound.play()
+            morse_snd.play()
             
     # Show message        
     text_str = "Incoming transmissions for {}".format(user_name)
@@ -287,21 +248,20 @@ def segue( win ):
                                font='Top Secret')
                 
     # Post to screen and pause briefly
-    img.draw()
+    back_img.draw()
     text.draw()    
     win.flip()
     time.sleep(.2)
     
     # Animate (fade-out)
-#    text.contrast = 1
-    for i in np.array(range(100,-100,-2))/100.0:
+    for i in fade_out:
         text.contrast = i
-        img.draw()
+        back_img.draw()
         text.draw()    
         win.flip()
     
     time.sleep(.4)
-    filesound.stop()
+#    morse_snd.stop()
 
 # Joystick response function
 def poll_buttons( delay ):
@@ -372,14 +332,12 @@ def end_screen( win, beh_fig_name ):
     
     # Play music
     if MUSIC:
-        filesound = sound.Sound(value = "tyson.wav")
-        filesound.setVolume(SND_VOL*2)
-        filesound.play()
+        tyson_snd.play()
     
     text_str = user_name + "'s score:"
     corr_str = "{}%".format(ave_str)
     
-    # Set up psychopy stuff
+    # Create text and image objects
     text = visual.TextStim(win, text=text_str,
                            height=50,
                            alignHoriz='center',
@@ -401,12 +359,8 @@ def end_screen( win, beh_fig_name ):
                            pos = [0, -height/2.5],
                            antialias=True,
                            font='Top Secret')  
-                           
-    img = visual.ImageStim(win=win,
-                           image="stars.jpg",
-                           units="pix")
-#    img.size *= SCALE  # scale the image relative to initial size
     
+    # Load image of behavioral figure we just created                       
     beh_img = visual.ImageStim(win=win,
                                image = beh_fig_name,
                                units = "pix",
@@ -426,7 +380,7 @@ def end_screen( win, beh_fig_name ):
         fin_text.contrast = cont_out
 
         # Draw everything and post to screen
-        img.draw()
+        back_img.draw()
         beh_img.draw()
         text.draw()
         score_text.draw()
@@ -438,7 +392,7 @@ def end_screen( win, beh_fig_name ):
         if joy.Start() or (' ' in keys):       
             # Acknowledge button press with sound
             if MUSIC:
-                filesound.stop()
+                tyson_snd.stop()
                 laserSound()
                 
             # Animate
@@ -446,42 +400,45 @@ def end_screen( win, beh_fig_name ):
             for i in np.array(range(100,-100,-4))/100.0:
                 text.contrast = i
                 beh_img.contrast = i                
-                img.draw()
+                back_img.draw()
                 beh_img.draw()
                 text.draw()
                 win.flip()
                 
-            break_exp=False
+            quit_game=False
             break_endscr=True
             
             break
         elif joy.Back() or ('q' in keys):
             # Stop music
             if MUSIC:
-                filesound.stop()
-            break_exp=True
+                tyson_snd.stop()
+            quit_game=True
             break_endscr=True
             break
-    return break_exp
+    return quit_game
 
 ## Start script - initialize variables
 
 # Initialize boolean to break and end experiment
-break_exp=False
+quit_game=False
 
 # Counter
 play_reps=0
 
+# Define path to git repo
+main_dir=os.environ['HOME']+"/Desktop/py_stimuli/"
+
 # Define path for figure output
-fig_dir=os.environ['HOME']+"/Desktop/py_stimuli/expEyeTrack/beh_figs/"
+fig_dir=main_dir+"expEyeTrack/beh_figs/"
     
 # Find movies matching wildcard search
-videopath=os.environ['HOME']+"/Desktop/py_stimuli/JonesStimset/"
+videopath=main_dir+"JonesStimset/"
 videolist=glob.glob(videopath + '*.avi')
 #videolist = videolist[0:5]
 
 # Set header path
-headerpath=os.environ['HOME']+"/Desktop/py_stimuli/expEyeTrack/headers/"
+headerpath=main_dir+"expEyeTrack/headers/"
 
 # Get current screen size (works for single monitor only)
 app = wx.App(False)
@@ -503,7 +460,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=1; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -515,12 +472,14 @@ JOYSTICK=1; # 1: yes, 0: no1
 # Boolean for intro music
 MUSIC=1; # 1: yes, 0: no
 
+# Define fades
+fade_in = np.array(range(-100,100,2))/100.0
+fade_out = np.array(range(100,-100,-2))/100.0
+
 if MUSIC:
     def laserSound():
         # Acknowledge button press with sound
-        filesound = sound.Sound(value = "laser.wav")
-        filesound.setVolume(SND_VOL*2)
-        filesound.play()
+        laser_snd.play()
         
 if JOYSTICK:
     # Initialize joystick device - reload module, if necessary
@@ -589,15 +548,43 @@ load_text = visual.TextStim(win=win,
                                antialias=True,
                                alignHoriz='center', 
                                font='Road Rage')
-                               # fontFiles=['Road_Rage.otf'],
 
 # Animate (fade-in)
-for i in np.array(range(-100,100,2))/100.0:
+for i in fade_in:
     load_text.contrast = i
     load_text.draw()    
-    win.flip()                               
+    win.flip()
 
-                        
+# Load sounds (and set volumes)                             
+if MUSIC:
+    laser_snd = sound.Sound(value = "laser.wav") # For 'start' button press sound
+    laser_snd.setVolume(SND_VOL*2)
+
+    theme_snd = sound.Sound(value = "theme.wav") # Start-screen music
+    theme_snd.setVolume(SND_VOL)             
+    
+    tyson_snd = sound.Sound(value = "tyson.wav") # End-screen music
+    tyson_snd.setVolume(SND_VOL*2)              
+                  
+    mission_snd = sound.Sound(value = "mission-briefing.wav") # Instruction-screen music
+    mission_snd.setVolume(SND_VOL)
+
+    beep_snd = sound.Sound(value="beep.wav")
+    beep_snd.setVolume(SND_VOL)       
+
+    morse_snd = sound.Sound(value = "morse.wav")
+    morse_snd.setVolume(SND_VOL)
+
+# Load images (and set scales)
+# Instruction-screen background image                           
+back_img = visual.ImageStim(win=win,image="stars.jpg",units="pix")
+dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
+right_img = visual.ImageStim(win=win,image="right.png",units="pix")
+wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
+# Image (scaled to 2**10X2**10)                                          
+start_img = visual.ImageStim(win=win,image="start_screen_scl.png",units="pix")
+instr_img = visual.ImageStim(win=win,image="instructions.png",units="pix")
+              
 ## Initialize devices    
 if EYE_TRACKER:
     # Set up eye-tracker configuration dict
@@ -621,17 +608,13 @@ else:
 
 # Get devices for future access
 keyboard = io.devices.keyboard
-#display = io.devices.display
 #port = parallel.ParallelPort(address=0x0378)
     
 if EYE_TRACKER:
     # Run eyetracker calibration
     r = tracker.runSetupProcedure()
 
-while break_exp==False:
-    
-    # Initialize boolean to break and end experiment
-    break_block = False
+while quit_game==False:
     
     # Set header path and file name (according to current time)
     header_nm = 'hdr'+datetime.datetime.now().strftime("%m%d%Y_%H%M")
@@ -674,7 +657,7 @@ while break_exp==False:
     CORRECT[0] = 0 # Initialize with zero so the running average works at the beginning  
     
     # Animate (fade-out)
-    for i in np.array(range(100,-100,-4))/100.0:
+    for i in fade_out[::2]:
         load_text.contrast = i
         load_text.draw()    
         win.flip()
@@ -684,10 +667,10 @@ while break_exp==False:
         
         if play_reps==0:
             # Display start screen and wait for user to press 'Start'
-            break_exp = start_screen(win)
+            quit_game = start_screen(win)
         play_reps += 1
         
-        if break_exp:
+        if quit_game:
             break
 
         # Show 'incoming message...' animation
@@ -699,11 +682,6 @@ while break_exp==False:
         # Display demonstration of identities and corresponding dpad directions
         buttonDemo(win,joy,keyboard,SIDE)
         
-        # Create relevant image stimuli
-        dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
-        right_img = visual.ImageStim(win=win,image="right.png",units="pix")
-        wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
-    
     # Countdown to start
     readySet(win)
     
@@ -739,6 +717,7 @@ while break_exp==False:
     ## Launch experiment                                 
     globalClock = core.Clock()  # to track the time since experiment started
     buttonDemo
+    
     # Run Trials.....
     for trial_num in range(TRIAL_COUNT):
         
@@ -839,29 +818,18 @@ while break_exp==False:
             # Display updated stim on screen
             flip_time = win.flip()
             
-            # Check keyboard for button presses
-            keys = keyboard.getPresses()
-    
-            # Check any new keyboard char events for a space key
-            # If one is found, set the trial end variable
-            if ' ' in keys:
-                mov.status = visual.FINISHED
-                
             # Check any new keyboard char events for a 'q' key
             # If one is found, set the experiment break boolean
-            if joy.Back() or ('q' in keys):
-                break_exp = True
-                break_block = True
+            if joy.Back() or ('q' in keyboard.getPresses()):
+                quit_game = True
                 break
-                # in the future- this can run some method to save the header then "exit(0)"
         
         # Current Trial is Done
+        
         # If trial break variable is set, break trial
-        if break_block:
+        if quit_game:
             break
-        
-        # Current Trial is Done
-        
+                
         # Redraw stim
         if EYE_TRACKER:
             gaze_ok_region.draw()
@@ -883,7 +851,8 @@ while break_exp==False:
          
         # Check joystick for button presses
         if JOYSTICK:
-            # Poll joystick for n seconds
+            
+            # Poll joystick for X seconds
             RESP[trial_num], RESP_TIME[trial_num] = poll_buttons(DEC_WIN)
         
         # Pause for n seconds
@@ -892,7 +861,7 @@ while break_exp==False:
         if JOYSTICK:
             prog_bar.draw()
             corr_bar.draw()
-        win.flip(clearBuffer=True)
+#        win.flip(clearBuffer=True)
         time.sleep(ISI + jitter_times[trial_num])
             
         # Log ISI end time for header
@@ -909,7 +878,7 @@ while break_exp==False:
     plt.close()
     
     # All Trials are done
-    break_exp = end_screen( win, figOut_name )
+    quit_game = end_screen( win, figOut_name )
     
 ## End experiment   
 win.close() 
