@@ -54,44 +54,7 @@ def presents( win ):
             guitar_snd.play()
      
     # Pause briefly       
-    time.sleep(.2)
-    
-    # Animate (fade-out)
-    for i in fade_out[::4]:
-        guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
-        guitar_img.draw()
-        text.contrast = i
-        text.draw()    
-        win.flip()
-    
-    time.sleep(.25)
-
-# Show credits
-def presents( win ):
- 
-    # Create text object       
-    text_str = "Petkov/Howard Labs Present"
-    text = visual.TextStim(win, height = 45,
-                               wrapWidth = width,
-                               alignHoriz='center',
-                               text=text_str,
-                               antialias=True,
-                               font='Impact Label Reversed')
-                                                    
-    # Animate background (fade-in)
-    for i in fade_in[::4]:
-        guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
-        guitar_img.draw()
-        text.contrast = i
-        text.draw()
-        win.flip()
-                
-    # Play sound
-    if MUSIC:
-            guitar_snd.play()
-     
-    # Pause briefly       
-    time.sleep(.2)
+    time.sleep(.5)
     
     # Animate (fade-out)
     for i in fade_out[::4]:
