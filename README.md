@@ -18,6 +18,7 @@ Currently, loading raw (uncompressed) videos, future versions should read compre
     video: H.264 compressed,  
     audio: Linear PCM  
 
+
 These scripts make use of the following toolboxes:
 ## - Experiment software:
 **Psychopy** http://www.psychopy.org/
@@ -30,7 +31,7 @@ These scripts make use of the following toolboxes:
 ## - Subject feedback (via gamepad)
 **PyGame** http://www.pygame.org/
 
-**xbox.py** https://github.com/FRC4564/Xbox
+**xbox.py** Depends on Xbox 360 controller support for Python (11/9/13 - Steven Jacobs) https://github.com/FRC4564/Xbox
 
 ### Each folder contains a single experiment (composed of two files):   
 
