@@ -7,9 +7,7 @@ Created on Thu Feb 16 16:49:07 2017
 
 def buttonDemo( win, joy, keyboard, cmd_list ):
     
-    from constants import SIDE,SND_VOL,MUSIC,DISPSIZE,STIMDIR
-#    TESTING,CONTROLS,EYE_TRACKER,SIM_TRACKER,JOYSTICK,\
-#    MAINDIR,FADEIN,FADEOUT,DISPTYPE,SCALE,BLOCK_REPS,DEC_WIN,ISI,JITTER
+    from constants import SIDE,SND_VOL,MUSIC,DISPSIZE,MAINDIR,EXPDIR,STIMDIR,SNDDIR,IMGDIR
 
     # Force psychopy to use particular audio library
     from psychopy import prefs
@@ -23,15 +21,13 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
     def laserSound():
         # Load sounds (and set volumes)                             
         if MUSIC:
-            os.chdir('sounds')
-            filesound = sound.Sound(value = "laser.wav")
+            filesound = sound.Sound(value = SNDDIR+"laser.wav")
             filesound.setVolume(SND_VOL*2)
             # Acknowledge button press with sound
             filesound.play()
-            os.chdir('..')
 
     # Find movies matching wildcard search
-    videolist = glob.glob(STIMDIR + '*rad_100_audVid.avi')
+    videolist = glob.glob(STIMDIR+'*rad_100_audVid.avi')
     videolist.sort()
     
      # Get current screen size
@@ -46,7 +42,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
     cue_image = "xbox_dpad_cue.png"
        
     if SIDE=='R':
-        img_list_button = ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]
+        img_list_button = [IMGDIR+x for x in ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]]
         img_list_cue = img_list_button
 #        
 #        # Create list of functions corresponding to each button used
@@ -55,8 +51,8 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
 #                    lambda:joy.A(),
 #                    lambda:joy.X())
     else:
-        img_list_button = [button_image]*4
-        img_list_cue = [cue_image]*4
+        img_list_button = [IMGDIR+button_image]*4
+        img_list_cue = [IMGDIR+cue_image]*4
 #        
 #        # Create list of functions corresponding to each button used
 #        cmd_list = (lambda:joy.dpadUp(),
@@ -71,7 +67,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
     repeat_demo = True
     
     # Load images
-    os.chdir('images')
+    os.chdir(IMGDIR)
     warn_img = visual.ImageStim(win=win, image="training_mode.png",units="pix")
     dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
     dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",units="pix")
@@ -81,12 +77,12 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
     wait_img[0].pos = [0, -height/4]
     wait_img[1].pos = [0, -height/4]
     
-    os.chdir('..')
+    os.chdir(EXPDIR)
     
     # Create vector of log-distributed values for fade effect                           
     NewRange = (1.0 - -1.0)  
     logDist = (np.logspace(0, 1.0, 100, endpoint=True) / 10)
-    scaled_logDist = tuple(((logDist * NewRange) + -1.0)*-1)
+    scaled_logDist = tuple(((logDist * NewRange)+-1.0)*-1)
         
     while repeat_demo:
         
@@ -107,7 +103,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                                    italic=True,
                                    wrapWidth = width,
                                    color = 'grey',
-                                   pos=[0,-height/2 + 50])
+                                   pos=[0,-height/2+50])
                                    
         press_text = visual.TextStim(win, text="PRESS\n NOW",
                                    height=25,
@@ -139,7 +135,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
         while (time.time()-curr_time) < 3:
         
             # Oscillate img contrast
-            cont_out = cont_out + cont_step
+            cont_out = cont_out+cont_step
             if (cont_out<-.9) or (cont_out>.9):
                 cont_step *= -1
             dec_hl_img.contrast = cont_out
@@ -235,7 +231,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
         for i in range(len(videolist)):
             
             img = visual.ImageStim(win=win,
-                                   image=STIMDIR+img_list_button[i],
+                                   image=img_list_button[i],
                                    units="pix")
             if SIDE=='R':
                 img.size *= .45  # Scale the image relative to initial size
@@ -247,7 +243,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 cue_img = img
             else:
                 cue_img = visual.ImageStim(win=win,
-                                           image=STIMDIR+img_list_cue[i],
+                                           image=img_list_cue[i],
                                             units="pix")
                 cue_img.size -= cue_img.size/4  # Scale the image relative to initial size
                 cue_img.ori += 90*i # Iterate image orientation (rotation)

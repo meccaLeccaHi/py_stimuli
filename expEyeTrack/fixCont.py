@@ -14,7 +14,7 @@ future versions should read compressed movies-
 
 from constants import SIDE,BLOCK_REPS,DEC_WIN,ISI,JITTER,SND_VOL,\
 TESTING,CONTROLS,EYE_TRACKER,SIM_TRACKER,JOYSTICK,MUSIC,DISPSIZE,\
-MAINDIR,STIMDIR,FADEIN,FADEOUT # DISPTYPE,SCALE
+MAINDIR,EXPDIR,STIMDIR,SNDDIR,IMGDIR,HDRDIR,FIGDIR,FADEIN,FADEOUT # DISPTYPE,SCALE
 
 # Force psychopy to use particular audio library
 from psychopy import prefs
@@ -98,8 +98,6 @@ def start_screen( win ):
         start_img.draw()
         win.flip()
         
-    print('zoom completed\n')
-    
     # Wait on 'Start' button press
     while True:
         # Check devices for button presses
@@ -128,8 +126,6 @@ def start_screen( win ):
         
         elif joy.Back() or ('q' in keys):
             
-            print('quit on back \n')
-
             quit_game = True
             
             # Stop music and break
@@ -216,7 +212,7 @@ def instruct_screen( win ):
     while (instruct_play):
         
         # Oscillate text contrast while we wait
-        cont_out = cont_out + cont_step
+        cont_out = cont_out+cont_step
         if (cont_out<-.9) or (cont_out>.9):
             cont_step *= -1
         instrFin_text.contrast = cont_out
@@ -386,13 +382,13 @@ def save_logs():
     head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT,TRAJ_LIST,STEP_LIST)
 
     # Write header array to csv file
-    with open(headerpath + header_nm + '.csv', 'wb') as f:
+    with open(HDRDIR+header_nm+'.csv', 'wb') as f:
         writer = csv.writer(f)
         for val in head:
             writer.writerow(val)
         
     # Tell user about saved header
-    print "Header file saved: " + header_nm
+    print "Header file saved: "+header_nm
     
 def end_screen( win, beh_fig_name ):
     """ Gives subject feedback at end of each trial
@@ -408,7 +404,7 @@ def end_screen( win, beh_fig_name ):
     if MUSIC:
         tyson_snd.play()
     
-    text_str = user_name + "'s score:"
+    text_str = user_name+"'s score:"
     corr_str = "{}%".format(ave_str)
     
     # Create text and image objects
@@ -448,7 +444,7 @@ def end_screen( win, beh_fig_name ):
     while break_endscr==False:
         
         # Oscillate text contrast while we wait
-        cont_out = cont_out + cont_step
+        cont_out = cont_out+cont_step
         if (cont_out<-.9) or (cont_out>.9):
             cont_step *= -1
         fin_text.contrast = cont_out
@@ -499,15 +495,9 @@ quit_game=False
 
 # Counter
 play_reps=0
-
-# Define path for figure output
-fig_dir=MAINDIR+"expEyeTrack/beh_figs/"
     
 # Find movies matching wildcard search
-videolist=glob.glob(STIMDIR + '*.avi')
-
-# Set header path
-headerpath=MAINDIR+"expEyeTrack/headers/"
+videolist=glob.glob(STIMDIR+'*.avi')
 
 # Get current screen size
 width, height = DISPSIZE
@@ -516,7 +506,7 @@ width, height = DISPSIZE
 if TESTING==1:
     user_name = "Agent Qwe"
 else:
-    user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
+    user_name = "Agent "+raw_input('Enter player\'s name [e.g. Fabio]: ').title()
 
 if MUSIC:
     def laserSound():
@@ -618,7 +608,7 @@ for i in FADEIN:
     
 # Load sounds (and set volumes)                             
 if MUSIC:
-    os.chdir('sounds')
+    os.chdir(SNDDIR)
     
     laser_snd = sound.Sound(value = "laser.wav") # For 'start' button press sound
     laser_snd.setVolume(SND_VOL*2)
@@ -645,7 +635,7 @@ if MUSIC:
     guitar_snd.setVolume(SND_VOL)
     
 # Load images (and set scales) -- should be updated to list comprehension in future updates
-os.chdir('../images')                         
+os.chdir(IMGDIR)                         
 back_img = visual.ImageStim(win=win,image="stars.jpg",units="pix") # Instruction-screen background image  
 dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
 right_img = visual.ImageStim(win=win,image="right.png",units="pix")
@@ -653,7 +643,7 @@ wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
 start_img = visual.ImageStim(win=win,image="start_screen_scl.png",units="pix") # Image (scaled to 2**10X2**10)                                          
 instr_img = visual.ImageStim(win=win,image="instructions.png",units="pix")
 guitar_img = visual.ImageStim(win=win,image="guitar.png",units="pix")
-os.chdir('..')  # Return to original parent directory                       
+os.chdir(EXPDIR)  # Return to original parent directory                       
 
 # Main game loop              
 while quit_game==False:
@@ -680,7 +670,7 @@ while quit_game==False:
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
     
     # Assign identity # for faces more than 50% along tang. trajectory to opposing identity
-    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] + 1
+    temp1 = IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))]+1
     temp1[temp1==max(temp1)] = 0
     IDENT_LIST[np.where((TRAJ_LIST==2)&(STEP_LIST==2))] = temp1
     IDENT_LIST = (IDENT_LIST)
@@ -847,7 +837,7 @@ while quit_game==False:
                     gaze_in_region = 'No'
                     mov.status = visual.FINISHED
                             
-                #trial_num = t + block * len(videolist)
+                #trial_num = t+block * len(videolist)
                 # Update text on screen
                 if EYE_TRACKER:
                     gaze_dot.setPos(gpos)
@@ -919,7 +909,7 @@ while quit_game==False:
         tr_rect.draw()
         prog_bar.draw()
         corr_bar.draw()
-        time.sleep(ISI + JIT_TIME[trial_num])
+        time.sleep(ISI+JIT_TIME[trial_num])
             
         # Log ISI end time for header
         ISI_END[trial_num] = core.getTime()
@@ -929,7 +919,7 @@ while quit_game==False:
     
 #    ## Save psychometric figs
     plt = plot_beh(STEP_LIST,TRAJ_LIST,CORRECT,rad_only=True,SCORE=average)
-    figOut_name = fig_dir + "beh_fig_" + header_nm + ".png"    
+    figOut_name = FIGDIR+"beh_fig_"+header_nm+".png"    
     plt.savefig(filename=figOut_name,
                 dpi=100, transparent=True)
     plt.close()

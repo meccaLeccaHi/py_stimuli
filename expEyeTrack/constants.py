@@ -7,6 +7,7 @@ Created on Thu Nov 10 17:00:59 2016
 
 import numpy,wx
 
+## Set up display
 # Display type (either 'pygame' or 'psychopy')
 DISPTYPE = 'psychopy'
 
@@ -14,10 +15,21 @@ DISPTYPE = 'psychopy'
 app = wx.App(False)
 DISPSIZE = wx.GetDisplaySize()
 
+## Set paths
 # Main directory
-MAINDIR = '/home/adam/Desktop/py_stimuli/'
+MAINDIR='/home/adam/Desktop/py_stimuli/'
 # Directory where stimuli are located
-STIMDIR = MAINDIR + 'JonesStimset/'
+STIMDIR=MAINDIR+'JonesStimset/'
+# Directory where experiment is located
+EXPDIR=MAINDIR+'expEyeTrack/'
+# Directory where sounds are located
+SNDDIR=EXPDIR+'sounds/'
+# Directory where sounds are located
+IMGDIR=EXPDIR+'images/'
+# Directory where headers are located
+HDRDIR=EXPDIR+'headers/'
+# Define path for figure output
+FIGDIR=EXPDIR+'beh_figs/'    
 
 # Lateral side of controller to use
 SIDE='L'
