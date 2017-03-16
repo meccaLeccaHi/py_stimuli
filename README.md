@@ -1,10 +1,10 @@
 # py_stimuli 
 
-#### Python scripts for neuroscience/psychophysics experiments. 
+#### Python scripts for "game-like" packaging of neuroscience/psychophysics experiments. 
 
 ![alt text](https://i.ytimg.com/vi/4yBVK9NiLnI/hqdefault.jpg "'Laser Morph' screen grab")
 
-[Video demo on YouTube](https://youtu.be/4yBVK9NiLnI)
+[See video demo on YouTube](https://youtu.be/4yBVK9NiLnI)
 
 These scripts make use of the following toolboxes:
 ## - Experiment software:
@@ -14,7 +14,7 @@ These scripts make use of the following toolboxes:
 ## - Eyetracking software:
 **PyGaze** http://www.pygaze.org/
 #### Proprietary tools:
-**PyLink** http://www.psychopy.org/api/hardware/pylink.html
+**PyLink (for use of EyeLink eyetracker)** http://www.psychopy.org/api/hardware/pylink.html
 ## - Subject feedback (via gamepad)
 **PyGame** http://www.pygame.org/
 
