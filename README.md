@@ -8,13 +8,15 @@
 
 [See video demo on YouTube](https://youtu.be/4yBVK9NiLnI)
 
-Iohub eye-tracking/joystick-compatible movie player. 
+**py_stimuli** is an iohub eye-tracking/joystick-compatible movie player.
+
 Presentation of movies can be contingent on central fixation.
-Setup for an EyeLink(C) 1000 Desktop System. 
+Currently, setup for an EyeLink(C) 1000 Desktop System. 
 To use a different eye tracker implementation, change the iohub_tracker_class_path and eyetracker_config dict script variables.
-Currently loading raw (uncompressed) videos, future versions should read compressed movies-
-    video: H.264 compressed,
-    audio: Linear PCM
+
+Currently, loading raw (uncompressed) videos, future versions should read compressed movies-  
+    video: H.264 compressed,  
+    audio: Linear PCM  
 
 These scripts make use of the following toolboxes:
 ## - Experiment software:
