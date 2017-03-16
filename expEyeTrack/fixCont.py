@@ -29,9 +29,12 @@ import numpy as np
 from buttonDemo import buttonDemo
 from plot_beh import plot_beh
 
-# Show credits
 def presents( win ):
- 
+    """ Shows credits 
+    Arguments: win -- Psychopy window
+    Usage: presents( win )
+    """
+    
     # Create text object       
     text_str = "Petkov/Howard Labs Present"
     text = visual.TextStim(win, height = 55,
@@ -66,9 +69,13 @@ def presents( win ):
     
     time.sleep(.25)
 
-# Start screen function
 def start_screen( win ):
-
+    """ Shows start-screen, then waits on 'start' button press 
+    Arguments: win -- Psychopy window
+    Returns: 'quit_game' boolean
+    Usage: start_screen( win )
+    """
+    
     zoom_step = 50
       
     # Get image dimensions for mask
@@ -131,13 +138,19 @@ def start_screen( win ):
         
     return quit_game
         
-# Give subject instructions
 def instruct_screen( win ):
+    """ Give subject instructions via text, then waits on 'start' button press 
+    Arguments: win -- Psychopy window
+    Usage: instruct_screen( win )
+    """
     
     instruct_play = True
     
     def start_break():
-    # Break if 'start' or 'space' is pressed
+    """ Break if 'start' or 'space' is pressed
+    Usage: start_break()
+    """
+    
         if joy.Start() or (' ' in keyboard.getPresses(clear=True)):
             instruct_play = False
             if MUSIC:
@@ -222,6 +235,10 @@ def instruct_screen( win ):
         mission_snd.stop()
                 
 def readySet( win ):
+    """ Show "Mission starting in:"
+    Arguments: win -- Psychopy window
+    Usage: readySet( win )
+    """
             
     # Show "Mission starting in:"
     text_start = visual.TextStim(win=win,
@@ -269,7 +286,11 @@ def readySet( win ):
     time.sleep(.25)
     
 def segue( win ):
-                          
+     """ Shows 'Incoming transmission...' animation
+    Arguments: win -- Psychopy window
+    Usage: segue( win )
+    """
+                     
     # Animate background (fade-in)
     for i in fade_in[::4]:
         back_img.mask = np.ones((2**10,2**10), np.uint8)*i
@@ -307,6 +328,12 @@ def segue( win ):
 
 # Joystick response function
 def poll_buttons( delay ):
+    """ Waits on joystick response and waits
+    Arguments: delay -- How long to wait (in seconds)
+    Returns (in order): response (which button was pressed, if any)
+                        response time (when that button was pressed)
+    Usage: poll_buttons( delay )
+    """ 
     
     curr_time = time.time()
     resp = None
@@ -349,8 +376,11 @@ def poll_buttons( delay ):
     
     return resp, resp_time
 
-# Save log file function    
 def save_logs():
+    """ Saves log file to csv .txt file    
+    Usage: save_logs()
+    """ 
+    
     # Create header array from lists
     head = zip(np.arange(TRIAL_COUNT)+1,new_order+1,videolist,SCR_OPEN,SCR_CLOSE,ISI_END,IDENT_LIST,RESP,RESP_TIME,CORRECT,TRAJ_LIST,STEP_LIST)
 
@@ -363,8 +393,13 @@ def save_logs():
     # Tell user about saved header
     print "Header file saved: " + header_nm
     
-# Give subject feedback at end of each trial
 def end_screen( win, beh_fig_name ):
+    """ Gives subject feedback at end of each trial
+    Arguments: win -- Psychopy window
+               beh_fig_name -- File-name for behavioral figure saving
+    Returns: 'quit_game' boolean
+    Usage: end_screen( win, beh_fig_name )
+    """ 
     
     break_endscr = False
     
