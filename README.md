@@ -6,7 +6,7 @@
 
 ![alt text](https://i.ytimg.com/vi/4yBVK9NiLnI/hqdefault.jpg "'Laser Morph' screen grab")
 
-[See video demo on YouTube](https://youtu.be/4yBVK9NiLnI)
+[See video demo of *fixCont.py* on YouTube](https://youtu.be/4yBVK9NiLnI)
 
 **py_stimuli** is an iohub eye-tracking/joystick-compatible movie player.
 
@@ -26,12 +26,14 @@ These scripts make use of the following toolboxes:
 
 ## - Eyetracking software:
 **PyGaze** http://www.pygaze.org/
-#### Proprietary tools:
+
+Proprietary tools:
+
 **PyLink (for use of EyeLink eyetracker)** http://www.psychopy.org/api/hardware/pylink.html
 ## - Subject feedback (via gamepad)
-**PyGame** http://www.pygame.org/
+**PyGame -** http://www.pygame.org/
 
-**xbox.py** Depends on Xbox 360 controller support for Python (11/9/13 - Steven Jacobs) https://github.com/FRC4564/Xbox
+**Xbox Controller -**  Depends on Xbox 360 controller support for Python (xbox.py - Steven Jacobs) https://github.com/FRC4564/Xbox
 
 ### Each folder contains a single experiment (composed of two files):   
 
