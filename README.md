@@ -2,6 +2,8 @@
 
 #### Python scripts for "game-like" packaging of neuroscience/psychophysics experiments. 
 
+![alt text](http://i.imgur.com/O4okcnI.png?2 "'Laser Morph' start-screen")
+
 ![alt text](https://i.ytimg.com/vi/4yBVK9NiLnI/hqdefault.jpg "'Laser Morph' screen grab")
 
 [See video demo on YouTube](https://youtu.be/4yBVK9NiLnI)
