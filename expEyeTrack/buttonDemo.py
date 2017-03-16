@@ -11,7 +11,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
 
     # Force psychopy to use particular audio library
     from psychopy import prefs
-    prefs.general['audioLib'] = ['pygame']
+    prefs.general['audioLib']=['pygame']
     from psychopy import visual,sound
     
     import glob, time, os
@@ -21,124 +21,124 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
     def laserSound():
         # Load sounds (and set volumes)                             
         if MUSIC:
-            filesound = sound.Sound(value = SNDDIR+"laser.wav")
+            filesound=sound.Sound(value=SNDDIR+"laser.wav")
             filesound.setVolume(SND_VOL*2)
             # Acknowledge button press with sound
             filesound.play()
 
     # Find movies matching wildcard search
-    videolist = glob.glob(STIMDIR+'*rad_100_audVid.avi')
+    videolist=glob.glob(STIMDIR+'*rad_100_audVid.avi')
     videolist.sort()
     
      # Get current screen size
-    width, height = DISPSIZE
+    width, height=DISPSIZE
 
-    img_pos_list = np.array([[0,height/7],[height/6,0],[0,-height/7],[-height/6,0]])
-    movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
+    img_pos_list=np.array([[0,height/7],[height/6,0],[0,-height/7],[-height/6,0]])
+    movie_pos_list=np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
     
     # Choose which button image to show    
-    #button_image = "buttonIcon_N64.png"
-    button_image = "xbox_dpad.png"
-    cue_image = "xbox_dpad_cue.png"
+    #button_image="buttonIcon_N64.png"
+    button_image="xbox_dpad.png"
+    cue_image="xbox_dpad_cue.png"
        
     if SIDE=='R':
-        img_list_button = [IMGDIR+x for x in ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]]
-        img_list_cue = img_list_button
+        img_list_button=[IMGDIR+x for x in ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]]
+        img_list_cue=img_list_button
 #        
 #        # Create list of functions corresponding to each button used
-#        cmd_list = (lambda:joy.Y(),
+#        cmd_list=(lambda:joy.Y(),
 #                    lambda:joy.B(),
 #                    lambda:joy.A(),
 #                    lambda:joy.X())
     else:
-        img_list_button = [IMGDIR+button_image]*4
-        img_list_cue = [IMGDIR+cue_image]*4
+        img_list_button=[IMGDIR+button_image]*4
+        img_list_cue=[IMGDIR+cue_image]*4
 #        
 #        # Create list of functions corresponding to each button used
-#        cmd_list = (lambda:joy.dpadUp(),
+#        cmd_list=(lambda:joy.dpadUp(),
 #                    lambda:joy.dpadRight(),
 #                    lambda:joy.dpadDown(),
 #                    lambda:joy.dpadLeft()) 
                 
-    train_rep = 0
+    train_rep=0
     
-    vid_play = True
+    vid_play=True
     
-    repeat_demo = True
+    repeat_demo=True
     
     # Load images
     os.chdir(IMGDIR)
-    warn_img = visual.ImageStim(win=win, image="training_mode.png",units="pix")
-    dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
-    dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",units="pix")
+    warn_img=visual.ImageStim(win=win, image="training_mode.png",units="pix")
+    dec_img=visual.ImageStim(win=win,image="decision.png",units="pix")
+    dec_hl_img=visual.ImageStim(win=win,image="decision_hl.png",units="pix")
     
-    wait_img = [visual.ImageStim(win=win, image="xbox_start.png", units="pix"),
+    wait_img=[visual.ImageStim(win=win, image="xbox_start.png", units="pix"),
     visual.ImageStim(win=win, image="xbox_back.png", units="pix")]
-    wait_img[0].pos = [0, -height/4]
-    wait_img[1].pos = [0, -height/4]
+    wait_img[0].pos=[0, -height/4]
+    wait_img[1].pos=[0, -height/4]
     
     os.chdir(EXPDIR)
     
     # Create vector of log-distributed values for fade effect                           
-    NewRange = (1.0 - -1.0)  
-    logDist = (np.logspace(0, 1.0, 100, endpoint=True) / 10)
-    scaled_logDist = tuple(((logDist * NewRange)+-1.0)*-1)
+    NewRange=(1.0 - -1.0)  
+    logDist=(np.logspace(0, 1.0, 100, endpoint=True) / 10)
+    scaled_logDist=tuple(((logDist * NewRange)+-1.0)*-1)
         
     while repeat_demo:
         
         # Reset contrast of decision images                                 
-        dec_img.contrast = 1
-        dec_hl_img.contrast = 1
+        dec_img.contrast=1
+        dec_hl_img.contrast=1
         
         # Create text objects          
-        instr_text = visual.TextStim(win, text="...by pressing these buttons:",
+        instr_text=visual.TextStim(win, text="...by pressing these buttons:",
                                    height=30,
                                    alignHoriz='center',
-                                   wrapWidth = width,
-                                   pos = [0, height/2 - 50]) 
+                                   wrapWidth=width,
+                                   pos=[0, height/2 - 50]) 
                                    
-        fin_text = visual.TextStim(win, text="<Press Start to skip>",
+        fin_text=visual.TextStim(win, text="<Press Start to skip>",
                                    height=35,
                                    alignHoriz='center',
                                    italic=True,
-                                   wrapWidth = width,
-                                   color = 'grey',
+                                   wrapWidth=width,
+                                   color='grey',
                                    pos=[0,-height/2+50])
                                    
-        press_text = visual.TextStim(win, text="PRESS\n NOW",
+        press_text=visual.TextStim(win, text="PRESS\n NOW",
                                    height=25,
                                    alignHoriz='center',
                                    bold=True,
-                                   wrapWidth = width,
-                                   color = 'yellow') 
+                                   wrapWidth=width,
+                                   color='yellow') 
                          
         # Show warning and animate fade
         if train_rep==0:
-            empty_mask = np.ones((2**10,2**10), np.uint8)
+            empty_mask=np.ones((2**10,2**10), np.uint8)
             # Animate (fade-in, hold, and fade-out)
             for i in np.array(range(-100,100,15)+[100]*10+range(100,-100,-20))/100.0:
-                    warn_img.mask = empty_mask*i
+                    warn_img.mask=empty_mask*i
                     warn_img.draw()
                     win.flip()
 
         # Show 1st block of instructions        
-        text = visual.TextStim(win,height=48,
+        text=visual.TextStim(win,height=48,
                                    text="When you see this sign...",
                                    pos=[0,height/4],
-                                   wrapWidth = width,
+                                   wrapWidth=width,
                                    alignHoriz='center')
         # Animate face halo
-        cont_step = -.1
-        cont_out = 1.0  
-        curr_time = time.time()
+        cont_step=-.1
+        cont_out=1.0  
+        curr_time=time.time()
         
         while (time.time()-curr_time) < 3:
         
             # Oscillate img contrast
-            cont_out = cont_out+cont_step
+            cont_out=cont_out+cont_step
             if (cont_out<-.9) or (cont_out>.9):
                 cont_step *= -1
-            dec_hl_img.contrast = cont_out
+            dec_hl_img.contrast=cont_out
             
             # Draw everything to the screen and post
             text.draw()
@@ -148,8 +148,8 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
         
             # Break if 'start' or 'space' is pressed
             if joy.Start() or (' ' in keyboard.getPresses()):
-                vid_play = False
-                repeat_demo = False
+                vid_play=False
+                repeat_demo=False
                 
                 # Acknowledge button press with sound
                 laserSound()
@@ -161,16 +161,16 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
           
         # Animate text
         for i in scaled_logDist:
-            text.contrast = i 
+            text.contrast=i 
             text.draw()
-            dec_img.contrast = i
+            dec_img.contrast=i
             dec_img.draw()
             win.flip()
             
             # Break if 'start' or 'space' is pressed   
             if joy.Start() or (' ' in keyboard.getPresses()):
-                vid_play = False
-                repeat_demo = False
+                vid_play=False
+                repeat_demo=False
                 
                 # Acknowledge button press with sound
                 laserSound()
@@ -181,23 +181,23 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
             break                         
                                       
         # Show 2nd block of instructions        
-        text = visual.TextStim(win,height=48,
+        text=visual.TextStim(win,height=48,
                                    text="Identify which of the following\n4 people you see or hear...",
-                                   wrapWidth = width,
+                                   wrapWidth=width,
                                    antialias=True,
                                    alignHoriz='center')
         text.draw()    
         win.flip()
                 
         # Pause for reading
-        curr_time = time.time()
+        curr_time=time.time()
         while time.time()-curr_time < 3.5:
             # Check keyboard for button presses
-            keys = keyboard.getPresses()
+            keys=keyboard.getPresses()
             # Check joystick for button presses    
             if joy.Start() or (' ' in keys):
-                vid_play = False
-                repeat_demo = False
+                vid_play=False
+                repeat_demo=False
                 
                 # Acknowledge button press with sound
                 laserSound()
@@ -209,16 +209,16 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
         
         # Animate fade
         for i in scaled_logDist:
-            text.contrast = i 
+            text.contrast=i 
             text.draw()    
             win.flip()
             
             # Check keyboard for button presses
-            keys = keyboard.getPresses()
+            keys=keyboard.getPresses()
             # Check joystick for button presses    
             if joy.Start() or (' ' in keys):
-                vid_play = False
-                repeat_demo = False
+                vid_play=False
+                repeat_demo=False
                 
                 # Acknowledge button press with sound
                 laserSound()
@@ -230,7 +230,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 
         for i in range(len(videolist)):
             
-            img = visual.ImageStim(win=win,
+            img=visual.ImageStim(win=win,
                                    image=img_list_button[i],
                                    units="pix")
             if SIDE=='R':
@@ -240,18 +240,18 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 img.ori += 90*i # Iterate image orientation (rotation)
 
             if SIDE=='R':
-                cue_img = img
+                cue_img=img
             else:
-                cue_img = visual.ImageStim(win=win,
+                cue_img=visual.ImageStim(win=win,
                                            image=img_list_cue[i],
                                             units="pix")
                 cue_img.size -= cue_img.size/4  # Scale the image relative to initial size
                 cue_img.ori += 90*i # Iterate image orientation (rotation)
             
             # Create movie stim by loading movie from list
-            mov = visual.MovieStim3(win, videolist[i]) 
+            mov=visual.MovieStim3(win, videolist[i]) 
             mov.size *= .75  # Scale the image relative to initial size
-            mov.pos = movie_pos_list[i]
+            mov.pos=movie_pos_list[i]
             
             # Start the movie stim by preparing it to play
             mov.play()
@@ -270,9 +270,9 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 
                 # Check joystick and keyboard for button presses    
                 if joy.Start() or (' ' in keyboard.getPresses()):
-                    mov.status = visual.FINISHED
-                    vid_play = False
-                    repeat_demo = False
+                    mov.status=visual.FINISHED
+                    vid_play=False
+                    repeat_demo=False
                     
                     # Acknowledge button press with sound
                     laserSound()
@@ -283,8 +283,8 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 break
             
             ## Cue button press
-            press_text.pos = img_pos_list[i]                
-            press_text.contrast = 1  
+            press_text.pos=img_pos_list[i]                
+            press_text.contrast=1  
         
             # Instruct user to press 'Start' and wait on button press
             while cmd_list[i]()==0:
@@ -293,9 +293,9 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 
                 # Oscillate text contrast while we wait
                 if press_text.contrast:
-                    press_text.contrast = 0
+                    press_text.contrast=0
                 else:
-                    press_text.contrast = 1
+                    press_text.contrast=1
                 
                 press_text.draw()    
                 cue_img.draw()
@@ -306,7 +306,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 
                 # Check joystick and keyboard for button presses 
                 if joy.Start() or (' ' in keyboard.getPresses()):
-                    vid_play = False
+                    vid_play=False
                     
                     # Acknowledge button press with sound
                     laserSound()
@@ -319,11 +319,11 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                 
             # Current Trial is Done
             # Wait on button presses
-            t_start = time.time()+1
+            t_start=time.time()+1
             while time.time()<t_start:
                 # Check joystick and keyboard for button presses    
                 if joy.Start() or (' ' in keyboard.getPresses()):
-                        vid_play = False
+                        vid_play=False
                         
                         # Acknowledge button press with sound
                         laserSound()
@@ -331,34 +331,34 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
                         break
                     
         # Prompt user for response (repeat y/n?)
-        color_list = ['yellow','grey']
-        sw = 0
-        curr_time = time.time()
-        delay = 1
+        color_list=['yellow','grey']
+        sw=0
+        curr_time=time.time()
+        delay=1
 
         while vid_play:
             
             if time.time()-curr_time > delay:
                 # Flip switch                        
-                sw = 1-sw
-                curr_time = time.time()
+                sw=1-sw
+                curr_time=time.time()
                 
             # Text to repeat or proceed
-            loop_text_rep = visual.TextStim(win, text="Repeat training?",
+            loop_text_rep=visual.TextStim(win, text="Repeat training?",
                                    height=40,
                                    color=color_list[1-sw],
                                    alignHoriz='center',
-                                   wrapWidth = width,
+                                   wrapWidth=width,
                                    antialias=True,
-                                   pos = [-width/5, height/4])
+                                   pos=[-width/5, height/4])
     
-            loop_text_proc = visual.TextStim(win, text="Proceed to mission",
+            loop_text_proc=visual.TextStim(win, text="Proceed to mission",
                                    height=40,
                                    color=color_list[sw],
                                    alignHoriz='center',
-                                   wrapWidth = width,
+                                   wrapWidth=width,
                                    antialias=True,
-                                   pos = [width/5, height/4]) 
+                                   pos=[width/5, height/4]) 
                                    
             loop_text_rep.draw()    
             loop_text_proc.draw()
@@ -370,7 +370,7 @@ def buttonDemo( win, joy, keyboard, cmd_list ):
             if joy.Back():
                 break
             elif joy.Start() or (' ' in keyboard.getPresses()):
-                repeat_demo = False
+                repeat_demo=False
                 
                 # Acknowledge button press with sound
                 laserSound()

@@ -9,11 +9,11 @@ import numpy,wx
 
 ## Set up display
 # Display type (either 'pygame' or 'psychopy')
-DISPTYPE = 'psychopy'
+DISPTYPE='psychopy'
 
 # Get current screen size (works for single monitor only)
-app = wx.App(False)
-DISPSIZE = wx.GetDisplaySize()
+app=wx.App(False)
+DISPSIZE=wx.GetDisplaySize()
 
 ## Set paths
 # Main directory
@@ -41,7 +41,7 @@ DEC_WIN=2
 ISI=1
 # Jitter range (+/-seconds)
 JITTER=.1
-# Scaling of image (none = 1)
+# Scaling of image (none=1)
 SCALE=1
 # Volume of sound effects
 SND_VOL=.25
@@ -60,5 +60,5 @@ JOYSTICK=0; # 1: yes, 0: no1
 MUSIC=1; # 1: yes, 0: no
 
 # Define fades
-FADEIN = tuple(numpy.array(range(-100,100,2))/100.0)
-FADEOUT = tuple(numpy.array(range(100,-100,-2))/100.0)
+FADEIN=tuple(numpy.array(range(-100,100,2))/100.0)
+FADEOUT=tuple(numpy.array(range(100,-100,-2))/100.0)
