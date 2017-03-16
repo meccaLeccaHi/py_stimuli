@@ -5,27 +5,48 @@ Created on Thu Nov 10 17:00:59 2016
 @author: adam
 """
 
-import os
+import numpy,wx
 
-# display type (either 'pygame' or 'psychopy')
+# Display type (either 'pygame' or 'psychopy')
 DISPTYPE = 'psychopy'
 
-# check os and assign directory
-if os.name=='nt':
-    from win32api import GetSystemMetrics
-    # display resolution (should match monitor settings!)
-    DISPSIZE = (int(GetSystemMetrics(0)/2),int(GetSystemMetrics(1)/2))
+# Get current screen size (works for single monitor only)
+app = wx.App(False)
+DISPSIZE = wx.GetDisplaySize()
 
-    HOMEDIR = 'C:/Users/adam/Desktop/virtBox_share/'
-else:
-    
-    # display resolution (should match monitor settings!)
-    DISPSIZE = (1920, 1080)
+# Main directory
+MAINDIR = '/home/adam/Desktop/py_stimuli/'
+# Directory where stimuli are located
+STIMDIR = MAINDIR + 'JonesStimset/'
 
-    HOMEDIR = '/home/adam/Desktop/virtBox_share/'
-    # HOMEDIR = '/media/sf_vb_share/'
+# Lateral side of controller to use
+SIDE='L'
+# Number of trials of each stimulus to run
+BLOCK_REPS=1
+# Decision cue window (seconds)
+DEC_WIN=2
+# Inter-stimulus interval (seconds)
+ISI=1
+# Jitter range (+/-seconds)
+JITTER=.1
+# Scaling of image (none = 1)
+SCALE=1
+# Volume of sound effects
+SND_VOL=.25
 
-# directory where stimuli are located
-STIMDIR = HOMEDIR + 'JonesStimset/'
+# Boolean for debugging mode
+TESTING=1; # 1: yes, 0: no
+# Boolean for including control stimuli
+CONTROLS=0; # 1: yes, 0: no
+# Boolean for presence of tracker
+EYE_TRACKER=0; # 1: yes, 0: no
+# Boolean to simulate tracker activity with mouse
+SIM_TRACKER=1; # 1: yes, 0: no
+# Boolean for presence of joystick (N64 only, currently)
+JOYSTICK=0; # 1: yes, 0: no1
+# Boolean for intro music
+MUSIC=1; # 1: yes, 0: no
 
-#SCREEN = 1
+# Define fades
+FADEIN = tuple(numpy.array(range(-100,100,2))/100.0)
+FADEOUT = tuple(numpy.array(range(100,-100,-2))/100.0)

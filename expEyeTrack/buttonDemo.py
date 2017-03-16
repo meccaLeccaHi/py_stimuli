@@ -5,36 +5,37 @@ Created on Thu Feb 16 16:49:07 2017
 @author: root
 """
 
-def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
+def buttonDemo( win, joy, keyboard, cmd_list ):
     
-    from psychopy import visual # core, 
-#    from psychopy.iohub.client import launchHubServer
-    
+    from constants import SIDE,SND_VOL,MUSIC,DISPSIZE,STIMDIR
+#    TESTING,CONTROLS,EYE_TRACKER,SIM_TRACKER,JOYSTICK,\
+#    MAINDIR,FADEIN,FADEOUT,DISPTYPE,SCALE,BLOCK_REPS,DEC_WIN,ISI,JITTER
+
     # Force psychopy to use particular audio library
     from psychopy import prefs
     prefs.general['audioLib'] = ['pygame']
-    from psychopy import sound
+    from psychopy import visual,sound
     
-    import glob, wx, time, os # , csv, datetime
+    import glob, time, os
     import numpy as np
-    
-    # Volume of sound effects
-    SND_VOL=.25
+
     
     def laserSound():
-        # Acknowledge button press with sound
-        filesound = sound.Sound(value = "laser.wav")
-        filesound.setVolume(SND_VOL*2)
-        filesound.play()
+        # Load sounds (and set volumes)                             
+        if MUSIC:
+            os.chdir('sounds')
+            filesound = sound.Sound(value = "laser.wav")
+            filesound.setVolume(SND_VOL*2)
+            # Acknowledge button press with sound
+            filesound.play()
+            os.chdir('..')
 
     # Find movies matching wildcard search
-    videopath = os.environ['HOME']+"/Desktop/py_stimuli/JonesStimset/"
-    videolist = glob.glob(videopath + '*rad_100_audVid.avi')
+    videolist = glob.glob(STIMDIR + '*rad_100_audVid.avi')
     videolist.sort()
     
-     # Get current screen size (works for single monitor only)
-    app = wx.App(False)
-    width, height = wx.GetDisplaySize()
+     # Get current screen size
+    width, height = DISPSIZE
 
     img_pos_list = np.array([[0,height/7],[height/6,0],[0,-height/7],[-height/6,0]])
     movie_pos_list = np.array([[0,height/3.5],[height/3.5,0],[0,-height/3.5],[-height/3.5,0]])
@@ -44,7 +45,7 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
     button_image = "xbox_dpad.png"
     cue_image = "xbox_dpad_cue.png"
        
-    if side=='R':
+    if SIDE=='R':
         img_list_button = ["xbox_Y.png","xbox_B.png","xbox_A.png","xbox_X.png"]
         img_list_cue = img_list_button
 #        
@@ -62,9 +63,7 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
 #                    lambda:joy.dpadRight(),
 #                    lambda:joy.dpadDown(),
 #                    lambda:joy.dpadLeft()) 
-        
-    wait_img_list = ["xbox_start.png", "xbox_back.png"] 
-        
+                
     train_rep = 0
     
     vid_play = True
@@ -72,9 +71,17 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
     repeat_demo = True
     
     # Load images
+    os.chdir('images')
     warn_img = visual.ImageStim(win=win, image="training_mode.png",units="pix")
     dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
     dec_hl_img = visual.ImageStim(win=win,image="decision_hl.png",units="pix")
+    
+    wait_img = [visual.ImageStim(win=win, image="xbox_start.png", units="pix"),
+    visual.ImageStim(win=win, image="xbox_back.png", units="pix")]
+    wait_img[0].pos = [0, -height/4]
+    wait_img[1].pos = [0, -height/4]
+    
+    os.chdir('..')
     
     # Create vector of log-distributed values for fade effect                           
     NewRange = (1.0 - -1.0)  
@@ -111,9 +118,10 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
                          
         # Show warning and animate fade
         if train_rep==0:
+            empty_mask = np.ones((2**10,2**10), np.uint8)
             # Animate (fade-in, hold, and fade-out)
             for i in np.array(range(-100,100,15)+[100]*10+range(100,-100,-20))/100.0:
-                    warn_img.mask = np.ones((2**10,2**10), np.uint8)*i
+                    warn_img.mask = empty_mask*i
                     warn_img.draw()
                     win.flip()
 
@@ -227,19 +235,19 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
         for i in range(len(videolist)):
             
             img = visual.ImageStim(win=win,
-                                   image=img_list_button[i],
+                                   image=STIMDIR+img_list_button[i],
                                    units="pix")
-            if side=='R':
+            if SIDE=='R':
                 img.size *= .45  # Scale the image relative to initial size
             else:
                 img.size -= img.size/4  # Scale the image relative to initial size
                 img.ori += 90*i # Iterate image orientation (rotation)
 
-            if side=='R':
+            if SIDE=='R':
                 cue_img = img
             else:
                 cue_img = visual.ImageStim(win=win,
-                                           image=img_list_cue[i],
+                                           image=STIMDIR+img_list_cue[i],
                                             units="pix")
                 cue_img.size -= cue_img.size/4  # Scale the image relative to initial size
                 cue_img.ori += 90*i # Iterate image orientation (rotation)
@@ -339,10 +347,6 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
                 sw = 1-sw
                 curr_time = time.time()
                 
-            wait_img = visual.ImageStim(win=win, image=wait_img_list[sw], units="pix")
-#            wait_img.size *= .75  # Scale the image relative to initial size
-            wait_img.pos = [0, -height/4]
-            
             # Text to repeat or proceed
             loop_text_rep = visual.TextStim(win, text="Repeat training?",
                                    height=40,
@@ -362,7 +366,7 @@ def buttonDemo( win, joy, keyboard, cmd_list, side='L' ):
                                    
             loop_text_rep.draw()    
             loop_text_proc.draw()
-            wait_img.draw()
+            wait_img[sw].draw()
             
             win.flip()
              

@@ -12,17 +12,18 @@ future versions should read compressed movies-
     audio: Linear PCM
 '''
 
-#from constants import DISPSIZE
-
-from psychopy import core, visual #, parallel
-from psychopy.iohub.client import launchHubServer
+from constants import SIDE,BLOCK_REPS,DEC_WIN,ISI,JITTER,SND_VOL,\
+TESTING,CONTROLS,EYE_TRACKER,SIM_TRACKER,JOYSTICK,MUSIC,DISPSIZE,\
+MAINDIR,STIMDIR,FADEIN,FADEOUT # DISPTYPE,SCALE
 
 # Force psychopy to use particular audio library
 from psychopy import prefs
 prefs.general['audioLib'] = ['pygame']
-from psychopy import sound
+from psychopy import core, visual, sound #, parallel
 
-import glob, time, csv, datetime, wx, xbox, os, cv2 # , subprocess
+from psychopy.iohub.client import launchHubServer
+
+import glob, time, csv, datetime, xbox, os, cv2
 import numpy as np
 
 # Import custom functions
@@ -45,7 +46,7 @@ def presents( win ):
                                font='Impact Label Reversed')
                                                     
     # Animate background (fade-in)
-    for i in fade_in[::4]:
+    for i in FADEIN[::4]:
         guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
         guitar_img.draw()
         text.contrast = i
@@ -60,7 +61,7 @@ def presents( win ):
     time.sleep(.5)
     
     # Animate (fade-out)
-    for i in fade_out[::4]:
+    for i in FADEOUT[::4]:
         guitar_img.mask = np.ones((2**10,2**10), np.uint8)*i
         guitar_img.draw()
         text.contrast = i
@@ -147,9 +148,9 @@ def instruct_screen( win ):
     instruct_play = True
     
     def start_break():
-    """ Break if 'start' or 'space' is pressed
-    Usage: start_break()
-    """
+        """ Break if 'start' or 'space' is pressed
+        Usage: start_break()
+        """
     
         if joy.Start() or (' ' in keyboard.getPresses(clear=True)):
             instruct_play = False
@@ -181,7 +182,7 @@ def instruct_screen( win ):
     instr_img.pos = start_pos
     
     # Animate (fade-in)
-    for i in fade_in[::6]:
+    for i in FADEIN[::6]:
         if (instruct_play):
             back_img.draw()
             instr_img.mask = np.ones((2**10,2**10), np.uint8)*i
@@ -248,7 +249,7 @@ def readySet( win ):
                                  text="Mission starting in:")
     
     # Animate (fade-in)
-    for i in fade_in[::4]:
+    for i in FADEIN[::4]:
         text_start.contrast = i 
         text_start.draw()
         win.flip()
@@ -268,7 +269,7 @@ def readySet( win ):
                                 font='DS-Digital')
     
         # Animate (fade-out)
-        for i in fade_out:
+        for i in FADEOUT:
             text.contrast = i 
             text_start.draw()
             text.draw()    
@@ -286,13 +287,13 @@ def readySet( win ):
     time.sleep(.25)
     
 def segue( win ):
-     """ Shows 'Incoming transmission...' animation
+    """ Shows 'Incoming transmission...' animation
     Arguments: win -- Psychopy window
     Usage: segue( win )
     """
                      
     # Animate background (fade-in)
-    for i in fade_in[::4]:
+    for i in FADEIN[::4]:
         back_img.mask = np.ones((2**10,2**10), np.uint8)*i
         back_img.draw()
         win.flip()
@@ -317,7 +318,7 @@ def segue( win ):
     time.sleep(.2)
     
     # Animate (fade-out)
-    for i in fade_out:
+    for i in FADEOUT:
         text.contrast = i
         back_img.draw()
         text.draw()    
@@ -499,61 +500,23 @@ quit_game=False
 # Counter
 play_reps=0
 
-# Define path to git repo
-main_dir=os.environ['HOME']+"/Desktop/py_stimuli/"
-
 # Define path for figure output
-fig_dir=main_dir+"expEyeTrack/beh_figs/"
+fig_dir=MAINDIR+"expEyeTrack/beh_figs/"
     
 # Find movies matching wildcard search
-videopath=main_dir+"JonesStimset/"
-videolist=glob.glob(videopath + '*.avi')
-#videolist = videolist[0:5]
+videolist=glob.glob(STIMDIR + '*.avi')
 
 # Set header path
-headerpath=main_dir+"expEyeTrack/headers/"
+headerpath=MAINDIR+"expEyeTrack/headers/"
 
-# Get current screen size (works for single monitor only)
-app = wx.App(False)
-width, height = wx.GetDisplaySize()
-    
-# Lateral side of controller to use
-SIDE='L'
-# Number of trials of each stimulus to run
-BLOCK_REPS=1
-# Decision cue window (seconds)
-DEC_WIN=2
-# Inter-stimulus interval (seconds)
-ISI=1
-# Jitter range (+/-seconds)
-JITTER=.1
-# Scaling of image (none = 1)
-SCALE=1
-# Volume of sound effects
-SND_VOL=.25
-
-# Boolean for debugging mode
-TESTING=0; # 1: yes, 0: no
-# Boolean for including control stimuli
-CONTROLS=0; # 1: yes, 0: no
-# Boolean for presence of tracker
-EYE_TRACKER=0; # 1: yes, 0: no
-# Boolean to simulate tracker activity with mouse
-SIMULATE=1; # 1: yes, 0: no
-# Boolean for presence of joystick (N64 only, currently)
-JOYSTICK=0; # 1: yes, 0: no1
-# Boolean for intro music
-MUSIC=1; # 1: yes, 0: no
+# Get current screen size
+width, height = DISPSIZE
 
 # Prompt user for player name
 if TESTING==1:
     user_name = "Agent Qwe"
 else:
     user_name = "Agent " + raw_input('Enter player\'s name [e.g. Fabio]: ').title()
-    
-# Define fades
-fade_in = tuple(np.array(range(-100,100,2))/100.0)
-fade_out = tuple(np.array(range(100,-100,-2))/100.0)
 
 if MUSIC:
     def laserSound():
@@ -566,11 +529,9 @@ if EYE_TRACKER:
     iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
     eyetracker_config = dict()
     eyetracker_config['name'] = 'tracker'
-    if SIMULATE:
-        eyetracker_config['simulation_mode'] = True
-    else:
-        eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
-        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, 
+    eyetracker_config['simulation_mode'] = (SIM_TRACKER==1)
+    eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
+    eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, 
             track_eyes='RIGHT')
 
     # Since no experiment or session code is given, no iohub hdf5 file
@@ -619,17 +580,14 @@ if CONTROLS==0:
 # Total trial count for experiment
 TRIAL_COUNT = len(videolist) * BLOCK_REPS
 
-# Set screen parameters
+# Set screen parameters for testing (must be in integer values)
 if TESTING:
     FLSCRN = False
-    # Scale screen for testing
-    SCREEN_SIZE = np.array([(x/1.5) for x in (width, height)])
-    # We're referencing pixels, so must be in integer values
-    SCREEN_SIZE = np.floor(SCREEN_SIZE)
+    SCREEN_SIZE = np.floor([(x/1.5) for x in np.array(DISPSIZE)])
 else:
     FLSCRN = True
-    SCREEN_SIZE = np.array([width, height])
-    
+    SCREEN_SIZE = np.array(DISPSIZE)
+
 # Set up photodiode
 PHOTO_SIZE = 50
 # Pixels must be integers
@@ -653,13 +611,15 @@ load_text = visual.TextStim(win=win,
                                font='Road Rage')
 
 # Animate (fade-in)
-for i in fade_in:
+for i in FADEIN:
     load_text.contrast = i
     load_text.draw()    
     win.flip()
     
 # Load sounds (and set volumes)                             
 if MUSIC:
+    os.chdir('sounds')
+    
     laser_snd = sound.Sound(value = "laser.wav") # For 'start' button press sound
     laser_snd.setVolume(SND_VOL*2)
 
@@ -683,18 +643,19 @@ if MUSIC:
     
     guitar_snd = sound.Sound(value = "guitar.wav")
     guitar_snd.setVolume(SND_VOL)
-
-# Load images (and set scales)
-# Instruction-screen background image                           
-back_img = visual.ImageStim(win=win,image="stars.jpg",units="pix")
+    
+# Load images (and set scales) -- should be updated to list comprehension in future updates
+os.chdir('../images')                         
+back_img = visual.ImageStim(win=win,image="stars.jpg",units="pix") # Instruction-screen background image  
 dec_img = visual.ImageStim(win=win,image="decision.png",units="pix")
 right_img = visual.ImageStim(win=win,image="right.png",units="pix")
 wrong_img = visual.ImageStim(win=win,image="wrong.png",units="pix")
-# Image (scaled to 2**10X2**10)                                          
-start_img = visual.ImageStim(win=win,image="start_screen_scl.png",units="pix")
+start_img = visual.ImageStim(win=win,image="start_screen_scl.png",units="pix") # Image (scaled to 2**10X2**10)                                          
 instr_img = visual.ImageStim(win=win,image="instructions.png",units="pix")
 guitar_img = visual.ImageStim(win=win,image="guitar.png",units="pix")
-              
+os.chdir('..')  # Return to original parent directory                       
+
+# Main game loop              
 while quit_game==False:
     
     # Set header path and file name (according to current time)
@@ -716,7 +677,6 @@ while quit_game==False:
     # Get position along trajectory (identity level) from video list        
     STEP_LIST = (np.unique([x[ident_ind+5:ident_ind+8] for x in videolist],return_inverse = True)[1])
     
-    # ident_ind = videolist[0].find("identity")+len("identity")
     IDENT_LIST = np.unique([x[ident_ind] for x in videolist],return_inverse = True)[1]
     
     # Assign identity # for faces more than 50% along tang. trajectory to opposing identity
@@ -726,7 +686,7 @@ while quit_game==False:
     IDENT_LIST = (IDENT_LIST)
         
     # Create jitter times (uniformly distributed)
-    jitter_times = tuple(np.random.uniform(-JITTER, JITTER, TRIAL_COUNT))
+    JIT_TIME = tuple(np.random.uniform(-JITTER, JITTER, TRIAL_COUNT))
     
     # Pre-allocate timing lists
     SCR_OPEN = [None] * TRIAL_COUNT
@@ -740,7 +700,7 @@ while quit_game==False:
     CORRECT[0] = 0 # Initialize with zero so the running average works at the beginning  
         
     # Animate load-screen (fade-out)
-    for i in fade_out[::2]:
+    for i in FADEOUT[::2]:
         load_text.contrast = i
         load_text.draw()    
         win.flip()
@@ -770,7 +730,7 @@ while quit_game==False:
     
     if JOYSTICK:
         # Display demonstration of identities and corresponding dpad directions
-        buttonDemo(win,joy,keyboard,cmd_list,SIDE)
+        buttonDemo(win,joy,keyboard,cmd_list)
         
     # Countdown to start
     readySet(win)
@@ -959,7 +919,7 @@ while quit_game==False:
         tr_rect.draw()
         prog_bar.draw()
         corr_bar.draw()
-        time.sleep(ISI + jitter_times[trial_num])
+        time.sleep(ISI + JIT_TIME[trial_num])
             
         # Log ISI end time for header
         ISI_END[trial_num] = core.getTime()
