@@ -47,7 +47,7 @@ SCALE=1
 SND_VOL=.25
 
 # Boolean for debugging mode
-TESTING=1; # 1: yes, 0: no
+TESTING=0; # 1: yes, 0: no
 # Boolean for including control stimuli
 CONTROLS=0; # 1: yes, 0: no
 # Boolean for presence of tracker
@@ -55,7 +55,7 @@ EYE_TRACKER=0; # 1: yes, 0: no
 # Boolean to simulate tracker activity with mouse
 SIM_TRACKER=1; # 1: yes, 0: no
 # Boolean for presence of joystick (N64 only, currently)
-JOYSTICK=0; # 1: yes, 0: no1
+JOYSTICK=1; # 1: yes, 0: no1
 # Boolean for intro music
 MUSIC=1; # 1: yes, 0: no
 
