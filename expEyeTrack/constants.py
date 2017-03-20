@@ -5,7 +5,7 @@ Created on Thu Nov 10 17:00:59 2016
 @author: adam
 """
 
-import numpy,wx
+import numpy, wx, os
 
 ## Set up display
 # Display type (either 'pygame' or 'psychopy')
@@ -17,7 +17,7 @@ DISPSIZE=wx.GetDisplaySize()
 
 ## Set paths
 # Main directory
-MAINDIR='/home/adam/Desktop/py_stimuli/'
+MAINDIR=os.environ['HOME']+'/Desktop/py_stimuli/'
 # Directory where stimuli are located
 STIMDIR=MAINDIR+'JonesStimset/'
 # Directory where experiment is located
