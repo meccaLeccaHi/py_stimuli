@@ -14,7 +14,7 @@ future versions should read compressed movies-
 
 from constants import SIDE,BLOCK_REPS,DEC_WIN,ISI,JITTER,SND_VOL,\
 TESTING,CONTROLS,EYE_TRACKER,SIM_TRACKER,JOYSTICK,MUSIC,DISPSIZE,\
-MAINDIR,EXPDIR,STIMDIR,SNDDIR,IMGDIR,HDRDIR,FIGDIR,FADEIN,FADEOUT # DISPTYPE,SCALE
+EXPDIR,STIMDIR,SNDDIR,IMGDIR,HDRDIR,FIGDIR,FADEIN,FADEOUT # DISPTYPE,SCALE
 
 # Force psychopy to use particular audio library
 from psychopy import prefs
@@ -809,7 +809,8 @@ while quit_game==False:
             
         # Send stimulus id over parallel port, if applicable
         if PARALLEL:
-            p.setData(0x55)  # convert to use 'IDENT_LIST[trial_num]'
+            print(IDENT_LIST[trial_num])            
+            p.setData(IDENT_LIST[trial_num])  # Set pins on parallel port
         
         # Start the movie stim by preparing it to play
         mov.play()
