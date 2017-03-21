@@ -536,7 +536,14 @@ else:
 keyboard=io.devices.keyboard
 
 # Set parallel port address
-#port=parallel.ParallelPort(address=0x0378)
+# 
+try:
+    # Boolean for presence of joystick (N64 only, currently)
+    PARALLEL=1 # 1: yes, 0: no1
+    import parallel    
+    p = parallel.Parallel()
+except:
+    PARALLEL=0 # 1: yes, 0: no1
 
 # Initialize joystick device - reload module, if necessary
 try:
@@ -800,6 +807,10 @@ while quit_game==False:
         # Add timing of movie opening to header
         SCR_OPEN[trial_num]=core.getTime()
             
+        # Send stimulus id over parallel port, if applicable
+        if PARALLEL:
+            p.setData(0x55)  # convert to use 'IDENT_LIST[trial_num]'
+        
         # Start the movie stim by preparing it to play
         mov.play()
             
