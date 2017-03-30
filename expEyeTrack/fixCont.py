@@ -536,9 +536,8 @@ else:
 keyboard=io.devices.keyboard
 
 # Set parallel port address
-# 
 try:
-    # Boolean for presence of joystick (N64 only, currently)
+    # Boolean for presence of parallel port
     PARALLEL=1 # 1: yes, 0: no1
     import parallel    
     p = parallel.Parallel()
@@ -635,10 +634,10 @@ if MUSIC:
     beep_snd=sound.Sound(value="beep.wav")
     beep_snd.setVolume(SND_VOL)       
 
-    morse_snd=sound.Sound(value="morse.wav")
+    morse_snd=sound.Sound(value="morse.wav") # Incoming message sound
     morse_snd.setVolume(SND_VOL)
     
-    guitar_snd=sound.Sound(value="guitar.wav")
+    guitar_snd=sound.Sound(value="guitar.wav") # Guitar lick
     guitar_snd.setVolume(SND_VOL)
     
 # Load images (and set scales) -- should be updated to list comprehension in future updates

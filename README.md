@@ -35,6 +35,8 @@ Proprietary tools:
 
 **Xbox Controller -**  Depends on Xbox 360 controller support for Python (xbox.py - Steven Jacobs) https://github.com/FRC4564/Xbox
 
+Ideally, the included fonts should be installed (placed in ~/.fonts).
+
 ### Each folder contains a single experiment (composed of two files):   
 
 #### - constants.py
