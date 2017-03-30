@@ -6,7 +6,7 @@
 
 ![alt text](https://i.ytimg.com/vi/4yBVK9NiLnI/hqdefault.jpg "'Laser Morph' screen grab")
 
-[See video demo of *fixCont.py* on YouTube](https://youtu.be/4yBVK9NiLnI)
+[See video demo of *fixCont.py* on YouTube](https://youtu.be/Fa7tWZQfb8c)
 
 **py_stimuli** is an iohub eye-tracking/joystick-compatible movie player.
 
