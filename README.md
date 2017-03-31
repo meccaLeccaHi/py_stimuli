@@ -23,7 +23,7 @@ Ideally, the included fonts should be installed (placed in ~/.fonts).
 These scripts make use of the following toolboxes:
 ## - Experiment software:
 **Psychopy** http://www.psychopy.org/
-- requires recent version that includes visual.MovieStim3() module, (which relies on MoviePy)
+- requires recent version that includes visual.MovieStim3() module, (which relies on MoviePy).
 
 ## - Eyetracking software:
 **PyGaze** http://www.pygaze.org/
@@ -39,7 +39,7 @@ Proprietary tools:
 ## - Output:
 **Parallel port output -**  Current stimulus ID (in binary form) provided via parallel port, accessed using PyParallel library https://github.com/pyserial/pyparallel
 
-**Log file -** .csv file summarizing stimulus presentation order and behavioral response for each trial (including reaction time)
+**Log file -** .csv file summarizing stimulus presentation order and behavioral response for each trial (including reaction time).
 
 ### Each folder contains a single experiment (composed of two files):   
 
