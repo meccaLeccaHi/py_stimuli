@@ -713,7 +713,8 @@ while quit_game==False:
     if play_reps==0:
         # Display start screen and wait for user to press 'Start'
         quit_game=start_screen(win)
-    play_reps += 1
+        
+    play_reps+=1
     
     if quit_game:
         break
@@ -808,8 +809,8 @@ while quit_game==False:
             
         # Send stimulus id over parallel port, if applicable
         if PARALLEL:
-            print(IDENT_LIST[trial_num])            
-            p.setData(IDENT_LIST[trial_num])  # Set pins on parallel port
+            print(new_order[trial_num])            
+            p.setData(new_order[trial_num]) # Set pins on parallel port
         
         # Start the movie stim by preparing it to play
         mov.play()
