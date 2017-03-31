@@ -37,7 +37,7 @@ Proprietary tools:
 **Xbox Controller -**  Depends on Xbox 360 controller support for Python (xbox.py - Steven Jacobs) https://github.com/FRC4564/Xbox
 
 ## - Output:
-**Parallel port output -**  Current stimulus ID (in binary form) provided via parallel port, accessed using PyParallel library https://github.com/pyserial/pyparallel
+**Parallel port output -**  Current stimulus ID (in binary form) provided via parallel port, accessed using PyParallel library https://github.com/pyserial/pyparallel (see [tutorial](http://www.bristolwatch.com/pport/))
 
 **Log file -** .csv file summarizing stimulus presentation order and behavioral response for each trial (including reaction time).
 
