@@ -18,6 +18,7 @@ Currently, loading raw (uncompressed) videos, future versions should read compre
     video: H.264 compressed,  
     audio: Linear PCM  
 
+Ideally, the included fonts should be installed (placed in ~/.fonts).
 
 These scripts make use of the following toolboxes:
 ## - Experiment software:
@@ -35,7 +36,10 @@ Proprietary tools:
 
 **Xbox Controller -**  Depends on Xbox 360 controller support for Python (xbox.py - Steven Jacobs) https://github.com/FRC4564/Xbox
 
-Ideally, the included fonts should be installed (placed in ~/.fonts).
+## - Output:
+**Parallel port output -**  Current stimulus ID (in binary form) provided via parallel port, accessed using PyParallel library https://github.com/pyserial/pyparallel
+
+**Log file -** .csv file summarizing stimulus presentation order and behavioral response for each trial (including reaction time)
 
 ### Each folder contains a single experiment (composed of two files):   
 
