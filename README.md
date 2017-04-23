@@ -1,6 +1,6 @@
 # py_stimuli 
 
-#### Python scripts for "game-like" packaging of neuroscience/psychophysics experiments. 
+#### Python scripts for "gamified" neuroscience/psychophysics experiments. 
 
 ![alt text](http://i.imgur.com/9vY9tfZ.png "'Laser Morph' start-screen")
 ![alt text](http://i.imgur.com/f8YGXEf.png "'Laser Morph' instruction screen")
